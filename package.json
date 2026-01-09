@@ -1,0 +1,28 @@
+{
+  "name": "wayne.animatedkit",
+  "version": "0.1.0",
+  "displayName": "Animated Kit",
+  "description": "GPU skinned skeleton animation support in build in pipeline, and rim light,dissolve shader feature support",
+  "author": {
+    "name": "Zhao Wei",
+    "email": "bfeiowtgruy@qq.com",
+    "url": "https://github.com/earthmi"
+  },
+  "samples":[
+    {
+      "displayName": "SimpleSample",
+      "description": "show GPU skinned skeleton animations and performances",
+      "path": "Samples~/Sample1"
+    },
+    {
+      "displayName": "SampleTextureFormatCompare",
+      "description": "show two different animation matrix textures performances",
+      "path": "Samples~/SampleTextureFormatCompare"
+    },
+    {
+      "displayName": "SampleMultipleMaterials",
+      "description": "show a mesh with two materials use GPU skinned skeleton animation",
+      "path": "Samples~/SampleMultipleMaterials"
+    }
+  ]
+}

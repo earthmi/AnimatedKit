@@ -1,0 +1,73 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: edde2215cdaf4207bec6ffeecd16e855, type: 3}
+  m_Name: boss_GPUAnimatedSO
+  m_EditorClassIdentifier: 
+  clipsInfo:
+  - Name: idle
+    StartFrame: 1
+    EndFrame: 40
+    FrameCount: 40
+    Seconds: 1.3333334
+    isEditorPreviewing: 0
+    IsLoop: 1
+    animatedEvents: []
+  - Name: attack01
+    StartFrame: 41
+    EndFrame: 100
+    FrameCount: 60
+    Seconds: 2
+    isEditorPreviewing: 0
+    IsLoop: 0
+    animatedEvents:
+    - eventName: AttackClipStart
+      triggerTime: 0.41130605
+      hasTriggered: 0
+      lastTriggerTime: -1
+    - eventName: AttackClipEnd
+      triggerTime: 0.6998051
+      hasTriggered: 0
+      lastTriggerTime: -1
+  - Name: death
+    StartFrame: 101
+    EndFrame: 151
+    FrameCount: 51
+    Seconds: 1.7
+    isEditorPreviewing: 0
+    IsLoop: 0
+    animatedEvents: []
+  - Name: walk
+    StartFrame: 152
+    EndFrame: 199
+    FrameCount: 48
+    Seconds: 1.6000001
+    isEditorPreviewing: 0
+    IsLoop: 1
+    animatedEvents: []
+  - Name: run
+    StartFrame: 200
+    EndFrame: 227
+    FrameCount: 28
+    Seconds: 0.9333334
+    isEditorPreviewing: 0
+    IsLoop: 1
+    animatedEvents: []
+  textures:
+  - format: 0
+    animatedTexture: {fileID: 2800000, guid: 7a0d309761630064ebe4bda884501b75, type: 2}
+    pixelCountPerFrame: 420
+  - format: 1
+    animatedTexture: {fileID: 2800000, guid: 0f1c8db26ae99744caaa394b0186e3e6, type: 2}
+    pixelCountPerFrame: 105
+  animatedMesh: {fileID: 4300000, guid: 46fde70e15c01df478c33942f3bf6415, type: 2}
+  shadingMaterial: {fileID: 2100000, guid: 9f3d7ebe8d352684aa87d56e5e32f398, type: 2}
+  currentUsingTexture: 1
