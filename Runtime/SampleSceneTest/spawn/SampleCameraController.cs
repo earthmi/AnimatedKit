@@ -22,7 +22,7 @@ public class SampleCameraController : MonoBehaviour
         }
 
         _previousMousePosition = Input.mousePosition;
-        _inputAxises.Set(Input.GetAxis(InputAxisX), Input.GetAxis(InputAxisY), Input.GetAxis(InputAxisZ));
+        _inputAxises.Set(Input.GetAxis(InputAxisX), 0, Input.GetAxis(InputAxisZ));
 
         transform.Translate(_inputAxises * coefficient);
     }
