@@ -39,7 +39,8 @@ Shader "GPUAnimation/SkinnedSkeleton-Lit(PBR)"
 		[NoScaleOffset] _AnimTex("Animation Texture", 2D) = "white" {}
     	[KeywordEnum(RGBM, RGBAHALF)] _Format ("Animation Texture Format", Float) = 1
     	[KeywordEnum(Bone1, Bone2,Bone4)] _Skin ("Skinned Quality", Float) = 2
-        
+        [Toggle(_INTERPOLATION)] _Interpolation ("Is Enable Interpolation", int) = 0
+
     	[PerRendererData]_KeepingTime("KeepingTime Time", Float) = 0
 	    [PerRendererData]_StartFrame("StartFrame", Int) = 0
 	    [PerRendererData]_EndFrame("EndFrame", Int) = 0
@@ -57,6 +58,7 @@ Shader "GPUAnimation/SkinnedSkeleton-Lit(PBR)"
 	    // #pragma skip_variants SHADOWS_CUBE LIGHTMAP_SHADOW_MIXING SHADOWS_SHADOWMASK FOG_EXP FOG_EXP2
  	    #pragma shader_feature_local_vertex _FORMAT_RGBM _FORMAT_RGBAHALF
  	    #pragma shader_feature_local_vertex _SKIN_BONE1 _SKIN_BONE2 _SKIN_BONE4
+		#pragma shader_feature_local_vertex  _INTERPOLATION
 
  	    #include "IlluminationLib.hlsl" 
         #include "GPUAnimationLib.hlsl"
@@ -81,7 +83,8 @@ Shader "GPUAnimation/SkinnedSkeleton-Lit(PBR)"
                 #pragma fragment fragPBR
                 //开启gpu instancing
                 #pragma multi_compile_instancing
-				#pragma multi_compile_fwdbase   
+				#pragma multi_compile_fwdbase
+
 				#pragma shader_feature __ _DISSOLVEEDGE
 				#pragma shader_feature __ _NORMALMAP
 				#pragma shader_feature __ _RimLight

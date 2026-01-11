@@ -81,13 +81,13 @@ namespace AnimatedKit
         public override void OnInspectorGUI()
         {
             base.OnInspectorGUI();
-            var changeFormat = _animationData.currentUsingTexture == GPUAnimaTextureColorMode._RGBM
-                ? GPUAnimaTextureColorMode._RGBAHALF
-                : GPUAnimaTextureColorMode._RGBM;
-            if (GUILayout.Button($"ChangeFormat({changeFormat})"))
-            {
-                _animationData.SetupTexture(changeFormat);
-            }
+            // var changeFormat = _animationData.currentUsingTexture == GPUAnimaTextureColorMode._RGBM
+            //     ? GPUAnimaTextureColorMode._RGBAHALF
+            //     : GPUAnimaTextureColorMode._RGBM;
+            // if (GUILayout.Button($"ChangeFormat({changeFormat})"))
+            // {
+            //     _animationData.SetupTexture(changeFormat);
+            // }
         }
 
         private GPUSkinnedAnimator GenerateMeshRendererObject()

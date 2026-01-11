@@ -161,7 +161,6 @@ namespace AnimatedKit
 
 
             var dataCollection = GenerateSO(GetAnimaFrameInfos(clips),textureInfos,mesh,materials,skinnedMeshRenderer.bones.Length);
-            dataCollection.SetupTexture(GPUAnimaTextureColorMode._RGBAHALF);
             var dataCollectionPath = $"{filePathPre}_GPUAnimatedSO.asset";
             WriteUnityFile(dataCollectionPath, dataCollection);
             // AssetDatabase.CreateAsset(dataCollection, string.Format($"{{0}}/{FolderName}/{{1}}_GPUAnimatedSO.asset", selectionPath, targetObject.name));
@@ -203,6 +202,12 @@ namespace AnimatedKit
             so.animatedMesh = mesh;
             so.textures = textureInfos;
             so.materials = mats;
+            so.isEnableInterpolation = false;
+            so.currentSkinnedQuality = SkinnedQuality.BONE1;
+            so.currentUsingTexture = GPUAnimaTextureColorMode._RGBAHALF;
+            so.SetupInterpolation();
+            so.SetupTexture(so.currentUsingTexture);
+            so.SetupSkinnedQuality(so.currentSkinnedQuality);
             return so;
         }
 

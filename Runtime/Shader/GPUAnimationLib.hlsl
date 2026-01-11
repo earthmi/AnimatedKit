@@ -218,9 +218,9 @@ uint GetCurrentFramePixelBeginIndex()
     uint pixelBeginIndex = currentFrame * _PixelCountPerFrame;//这一帧的骨骼矩阵像素数据的开始的像素索引 
     return pixelBeginIndex;
 }
-AnimatedVertexInfo GetAnimationInfo(float4 originVert,float3 originNormal,half4 boneIndex,half4 boneWeight)
+
+AnimatedVertexInfo GetTargetFrameAnimationInfo(uint pixelBeginIndex,float4 originVert,float3 originNormal,half4 boneIndex,half4 boneWeight)
 {
-    uint pixelBeginIndex = GetCurrentFramePixelBeginIndex();
 #ifdef _SKIN_BONE1
     float4x4 bone1Matrix = GetMatrix(pixelBeginIndex, boneIndex.x);
     
@@ -242,7 +242,7 @@ AnimatedVertexInfo GetAnimationInfo(float4 originVert,float3 originNormal,half4 
         mul(bone1Matrix, originNormal) * boneWeight.x
     +mul(bone2Matrix, originNormal) * boneWeight.y;
 #else
-    float4x4 bone1Matrix = GetMatrix(pixelBeginIndex, boneIndex.x);
+        float4x4 bone1Matrix = GetMatrix(pixelBeginIndex, boneIndex.x);
     float4x4 bone2Matrix = GetMatrix(pixelBeginIndex, boneIndex.y);
     float4x4 bone3Matrix = GetMatrix(pixelBeginIndex, boneIndex.z);
     float4x4 bone4Matrix = GetMatrix(pixelBeginIndex, boneIndex.w);
@@ -263,6 +263,37 @@ AnimatedVertexInfo GetAnimationInfo(float4 originVert,float3 originNormal,half4 
     AnimatedVertexInfo o;
     o.modelSpaceVertPos = pos;
     o.modelSpaceVertNormal = normal;
+    return o;
+}
+
+AnimatedVertexInfo GetAnimationInfo(float4 originVert,float3 originNormal,half4 boneIndex,half4 boneWeight)
+{
+    AnimatedVertexInfo o;
+#if _INTERPOLATION
+    uint startFrame = UNITY_ACCESS_INSTANCED_PROP(_StartFrame_arr, _StartFrame);
+    uint frameCount = UNITY_ACCESS_INSTANCED_PROP(_FrameCount_arr, _FrameCount);
+    float offsetSeconds = UNITY_ACCESS_INSTANCED_PROP(_OffsetSeconds_arr, _OffsetSeconds);
+    float keepingTime = UNITY_ACCESS_INSTANCED_PROP(_KeepingTime_arr, _KeepingTime)+ offsetSeconds;
+    float fFrame = (keepingTime * 30);
+    uint offsetFrame = (uint)fFrame;
+    uint offsetFrameNext = offsetFrame+1;
+
+    uint currentFrame = startFrame + clamp(offsetFrame,0,frameCount-1) ; // mod_int(offsetFrame,frameCount);// offsetFrame % frameCount;
+    uint nextFrame = startFrame + clamp(offsetFrameNext,0,frameCount-1) ; // mod_int(offsetFrame,frameCount);// offsetFrame % frameCount;
+    
+    uint currentFramePixelBeginIndex = currentFrame * _PixelCountPerFrame;//这一帧的骨骼矩阵像素数据的开始的像素索引
+    uint nextFramePixelBeginIndex = nextFrame * _PixelCountPerFrame;//下一帧的骨骼矩阵像素数据的开始的像素索引
+    AnimatedVertexInfo currentInfo = GetTargetFrameAnimationInfo(currentFramePixelBeginIndex,originVert,originNormal,boneIndex,boneWeight);
+    AnimatedVertexInfo nextInfo = GetTargetFrameAnimationInfo(nextFramePixelBeginIndex,originVert,originNormal,boneIndex,boneWeight);
+    float percent = frac(fFrame);
+    o.modelSpaceVertPos = lerp(currentInfo.modelSpaceVertPos,nextInfo.modelSpaceVertPos,percent);
+    o.modelSpaceVertNormal = lerp(currentInfo.modelSpaceVertNormal,nextInfo.modelSpaceVertNormal,percent);
+#else
+    uint pixelBeginIndex = GetCurrentFramePixelBeginIndex();
+    o = GetTargetFrameAnimationInfo(pixelBeginIndex,originVert,originNormal,boneIndex,boneWeight);
+#endif
+
+
     return o;
 }
 

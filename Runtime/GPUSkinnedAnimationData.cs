@@ -14,6 +14,13 @@ namespace AnimatedKit
         _RGBAHALF = 1,
 
     }
+
+    public enum SkinnedQuality
+    {
+        BONE1 = 0,
+        BONE2=1,
+        BONE4 =2,
+    }
     [Serializable]
     public class AnimationTextureInfo
     {
@@ -30,9 +37,77 @@ namespace AnimatedKit
         public Material[] materials;
         // public Material shadingMaterial;
         public GPUAnimaTextureColorMode currentUsingTexture;
+        private GPUAnimaTextureColorMode _currentUsingTexture;
+        public SkinnedQuality currentSkinnedQuality;
+        private SkinnedQuality _currentSkinnedQuality;
+
+        public bool isEnableInterpolation;
+        private bool _isEnableInterpolation;
+
         private void OnEnable()
         {
             Debug.Log($"启用GPUSkinnedAnimationData：{name}");
+            _currentUsingTexture = currentUsingTexture;
+            _currentSkinnedQuality = currentSkinnedQuality;
+            _isEnableInterpolation = isEnableInterpolation;
+        }
+
+        private void OnValidate()
+        {
+            if (_currentUsingTexture!= currentUsingTexture)
+            {
+                SetupTexture(currentUsingTexture);
+                _currentUsingTexture = currentUsingTexture;
+            }
+
+            if (_currentSkinnedQuality!= currentSkinnedQuality)
+            {
+                SetupSkinnedQuality(currentSkinnedQuality);
+                _currentSkinnedQuality = currentSkinnedQuality;
+            }
+
+            if (_isEnableInterpolation!= isEnableInterpolation)
+            {
+                SetupInterpolation();
+                _isEnableInterpolation = isEnableInterpolation;
+            }
+            
+        }
+
+        public void SetupInterpolation()
+        {
+            foreach (var VARIABLE in materials)
+            {
+                VARIABLE.SetInt("_Interpolation",isEnableInterpolation?1:0);
+                if (isEnableInterpolation)
+                {
+                    VARIABLE.EnableKeyword("_INTERPOLATION");
+                }
+                else
+                {
+                    VARIABLE.DisableKeyword("_INTERPOLATION");
+                }
+            }
+        }
+        
+        public void SetupSkinnedQuality(SkinnedQuality quality)
+        {
+            foreach (var VARIABLE in materials)
+            {
+                VARIABLE.SetFloat("_Skin",(float)quality);
+                foreach (SkinnedQuality skinnedBones in Enum.GetValues(typeof(SkinnedQuality)))
+                {
+                    var formatKeyword = $"_SKIN_{skinnedBones}";
+                    if (skinnedBones == quality)
+                    {
+                        VARIABLE.EnableKeyword(formatKeyword);
+                    }
+                    else
+                    {
+                        VARIABLE.DisableKeyword(formatKeyword);
+                    }
+                }
+            }
         }
         
         public void SetupTexture(GPUAnimaTextureColorMode targetFormat)
@@ -61,22 +136,6 @@ namespace AnimatedKit
                     }
                 }
             }
-            // shadingMaterial.SetTexture("_AnimTex",texInfo.animatedTexture);
-            // shadingMaterial.SetFloat("_Format",(float)texInfo.format);
-            // shadingMaterial.SetInt("_PixelCountPerFrame",texInfo.pixelCountPerFrame);
-            //
-            // foreach (var info in textures)
-            // {
-            //     var formatKeyword = $"_FORMAT{info.format}";
-            //     if (info.format == texInfo.format)
-            //     {
-            //         shadingMaterial.EnableKeyword(formatKeyword);
-            //     }
-            //     else
-            //     {
-            //         shadingMaterial.DisableKeyword(formatKeyword);
-            //     }
-            // }
             currentUsingTexture = targetFormat;
         }
     }
