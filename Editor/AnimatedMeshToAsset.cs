@@ -151,13 +151,16 @@ namespace AnimatedKit
             WriteUnityFile(meshPath, mesh);
             // AssetDatabase.CreateAsset(mesh, $"{meshPath}_Mesh.asset");
 
-            var material = GenerateMaterial(targetObject, skinnedMeshRenderer, textureInfos[0].animatedTexture, clips, skinnedMeshRenderer.bones.Length,TextureColorMode);
-            var materialPath = $"{filePathPre}_Material.asset";
-            WriteUnityFile(materialPath, material);
+            var materials = GenerateMaterials(targetObject, skinnedMeshRenderer, textureInfos[0].animatedTexture, clips, skinnedMeshRenderer.bones.Length,TextureColorMode);
+            foreach (var VARIABLE in materials)
+            {    
+                var materialPath = $"{filePathPre}_{VARIABLE.name}_mat.asset";
+                WriteUnityFile(materialPath, VARIABLE);
+            }
             // AssetDatabase.CreateAsset(material, string.Format($"{{0}}/{FolderName}/{{1}}_Material.asset", selectionPath, targetObject.name));
 
 
-            var dataCollection = GenerateSO(GetAnimaFrameInfos(clips),textureInfos,mesh,material,skinnedMeshRenderer.bones.Length);
+            var dataCollection = GenerateSO(GetAnimaFrameInfos(clips),textureInfos,mesh,materials,skinnedMeshRenderer.bones.Length);
             dataCollection.SetupTexture(GPUAnimaTextureColorMode._RGBAHALF);
             var dataCollectionPath = $"{filePathPre}_GPUAnimatedSO.asset";
             WriteUnityFile(dataCollectionPath, dataCollection);
@@ -193,13 +196,13 @@ namespace AnimatedKit
         }
 
 
-        static GPUSkinnedAnimationData GenerateSO(List<AnimationFrameInfo> frameInfos,List<AnimationTextureInfo> textureInfos,Mesh mesh,Material mat,int boneLength)
+        static GPUSkinnedAnimationData GenerateSO(List<AnimationFrameInfo> frameInfos,List<AnimationTextureInfo> textureInfos,Mesh mesh,Material[] mats,int boneLength)
         {
             var so = ScriptableObject.CreateInstance<GPUSkinnedAnimationData>();
             so.clipsInfo = frameInfos;
             so.animatedMesh = mesh;
             so.textures = textureInfos;
-            so.shadingMaterial = mat;
+            so.materials = mats;
             return so;
         }
 
@@ -418,15 +421,25 @@ namespace AnimatedKit
             return new Vector2(textureWidth, textureHeight);
         }
 
-        private static Material GenerateMaterial(GameObject targetObject, SkinnedMeshRenderer smr, Texture texture, IEnumerable<AnimationClip> clips, int boneLength,GPUAnimaTextureColorMode codeMode)
+        private static Material[] GenerateMaterials(GameObject targetObject, SkinnedMeshRenderer smr, Texture texture, IEnumerable<AnimationClip> clips, int boneLength,GPUAnimaTextureColorMode codeMode)
         {
-            var material = Object.Instantiate(smr.sharedMaterial);
-            var shaderPath = "GPUAnimation/SkinnedSkeleton-Lit(Low)";
-            material.shader = Shader.Find(shaderPath);
-            material.SetVector("_BoundsRange", new Vector2(minValue,maxValue));
-            material.enableInstancing = true;
+            Material[] mats = new Material[smr.sharedMaterials.Length];
+            for (int i = 0; i < smr.sharedMaterials.Length; i++)
+            {
+                var material = Object.Instantiate(smr.sharedMaterials[i]);
+                var shaderPath = "GPUAnimation/SkinnedSkeleton-Lit(Low)";
+                material.shader = Shader.Find(shaderPath);
+                material.SetVector("_BoundsRange", new Vector2(minValue,maxValue));
+                material.enableInstancing = true;
+                mats[i] = material;
+            }
+            // var material = Object.Instantiate(smr.sharedMaterial);
+            // var shaderPath = "GPUAnimation/SkinnedSkeleton-Lit(Low)";
+            // material.shader = Shader.Find(shaderPath);
+            // material.SetVector("_BoundsRange", new Vector2(minValue,maxValue));
+            // material.enableInstancing = true;
 
-            return material;
+            return mats;
         }
 
         static List<AnimationFrameInfo> GetAnimaFrameInfos(IEnumerable<AnimationClip> clips)
@@ -457,7 +470,13 @@ namespace AnimatedKit
             mf.mesh = data.animatedMesh;
 
             var mr = go.AddComponent<MeshRenderer>();
-            mr.sharedMaterial = data.shadingMaterial;
+            mr.sharedMaterials = data.materials;
+            // mr.sharedMaterials = new Material[data.materials.Length];
+            // for (int i = 0; i < mr.sharedMaterials.Length; i++)
+            // {
+            //     mr.sharedMaterials[i] = data.materials[i];
+            // }
+            // mr.sharedMaterial = data.shadingMaterial;
             mr.motionVectorGenerationMode = MotionVectorGenerationMode.ForceNoMotion;
             mr.reflectionProbeUsage = ReflectionProbeUsage.Off;
             mr.lightProbeUsage = LightProbeUsage.Off;

@@ -99,7 +99,7 @@ namespace AnimatedKit
             mf.mesh = _animationData.animatedMesh;
 
             var mr = go.AddComponent<MeshRenderer>();
-            mr.sharedMaterial = _animationData.shadingMaterial;
+            mr.sharedMaterials = _animationData.materials;
             mr.motionVectorGenerationMode = MotionVectorGenerationMode.ForceNoMotion;
             mr.reflectionProbeUsage = ReflectionProbeUsage.Off;
             mr.lightProbeUsage = LightProbeUsage.Off;
@@ -171,7 +171,7 @@ namespace AnimatedKit
             {
                 return false;
             }
-            if (_animationData.shadingMaterial ==null)
+            if (_animationData.materials is not {Length:>0})
             {
                 return false;
             }

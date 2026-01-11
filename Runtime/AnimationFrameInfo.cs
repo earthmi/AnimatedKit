@@ -43,6 +43,10 @@ namespace AnimatedKit
                 for (int j = 0; j < events.Length; j++)
                 {
                     var evt = events[j];
+                    if (string.IsNullOrEmpty(evt.stringParameter))
+                    {
+                        continue;
+                    }
                     animatedEvents.Add(new GPUAnimatedEvent()
                     {
                         eventName = evt.stringParameter,

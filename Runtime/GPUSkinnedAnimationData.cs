@@ -27,7 +27,8 @@ namespace AnimatedKit
         public List<AnimationFrameInfo> clipsInfo;
         public List<AnimationTextureInfo> textures;
         public Mesh animatedMesh;
-        public Material shadingMaterial;
+        public Material[] materials;
+        // public Material shadingMaterial;
         public GPUAnimaTextureColorMode currentUsingTexture;
         private void OnEnable()
         {
@@ -41,22 +42,41 @@ namespace AnimatedKit
             {
                 return;
             }
-            shadingMaterial.SetTexture("_AnimTex",texInfo.animatedTexture);
-            shadingMaterial.SetFloat("_Format",(float)texInfo.format);
-            shadingMaterial.SetInt("_PixelCountPerFrame",texInfo.pixelCountPerFrame);
 
-            foreach (var info in textures)
+            foreach (var VARIABLE in materials)
             {
-                var formatKeyword = $"_FORMAT{info.format}";
-                if (info.format == texInfo.format)
+                VARIABLE.SetTexture("_AnimTex",texInfo.animatedTexture);
+                VARIABLE.SetFloat("_Format",(float)texInfo.format);
+                VARIABLE.SetInt("_PixelCountPerFrame",texInfo.pixelCountPerFrame);
+                foreach (var info in textures)
                 {
-                    shadingMaterial.EnableKeyword(formatKeyword);
-                }
-                else
-                {
-                    shadingMaterial.DisableKeyword(formatKeyword);
+                    var formatKeyword = $"_FORMAT{info.format}";
+                    if (info.format == texInfo.format)
+                    {
+                        VARIABLE.EnableKeyword(formatKeyword);
+                    }
+                    else
+                    {
+                        VARIABLE.DisableKeyword(formatKeyword);
+                    }
                 }
             }
+            // shadingMaterial.SetTexture("_AnimTex",texInfo.animatedTexture);
+            // shadingMaterial.SetFloat("_Format",(float)texInfo.format);
+            // shadingMaterial.SetInt("_PixelCountPerFrame",texInfo.pixelCountPerFrame);
+            //
+            // foreach (var info in textures)
+            // {
+            //     var formatKeyword = $"_FORMAT{info.format}";
+            //     if (info.format == texInfo.format)
+            //     {
+            //         shadingMaterial.EnableKeyword(formatKeyword);
+            //     }
+            //     else
+            //     {
+            //         shadingMaterial.DisableKeyword(formatKeyword);
+            //     }
+            // }
             currentUsingTexture = targetFormat;
         }
     }

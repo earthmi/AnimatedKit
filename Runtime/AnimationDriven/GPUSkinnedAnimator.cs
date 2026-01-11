@@ -14,7 +14,7 @@ namespace AnimatedKit
 
         [SerializeField] private GPUSkinnedAnimationData SkinnedAnimaInfo;
 
-        public Material SharedMaterial => SkinnedAnimaInfo.shadingMaterial;
+        public Material[] SharedMaterials => SkinnedAnimaInfo.materials;
         public List<AnimationTextureInfo> TextureInfos => SkinnedAnimaInfo.textures;
         public List<AnimationFrameInfo> Clips=> SkinnedAnimaInfo.clipsInfo;
         private Dictionary<int, Action> _clipEvent = new();
