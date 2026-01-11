@@ -59,7 +59,7 @@ public class SampleObjectInitiator : MonoBehaviour
 
             var go = GameObject.Instantiate(targetObject, randomPosition, Quaternion.Euler(randomEulerAngles), ObjectPlaceholer);
             go.SetActive(true);
-            var animationExecutor = go.GetComponent<IAnimationExecutor>();
+            var animationExecutor = go.GetComponentInChildren<IAnimationExecutor>();
             if (animationExecutor!=null)
             {
                 var randomI = Random.Range(0, states.Count);
