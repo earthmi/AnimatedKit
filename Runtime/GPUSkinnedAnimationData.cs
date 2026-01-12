@@ -8,10 +8,12 @@ namespace AnimatedKit
 {
     public enum GPUAnimaTextureColorMode
     {
-        //8bit RGBM编码
+        //8bit RGBA32纹理 RGBM压缩编码
         _RGBM = 0,
         //16bit
         _RGBAHALF = 1,
+        //8bit RGBA32纹理 RGBA16F 16位双浮点编码
+        _DUAL16FP=2,
 
     }
 

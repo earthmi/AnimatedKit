@@ -32,6 +32,8 @@ float4 _AnimTex_TexelSize;
 int _PixelCountPerFrame;
 float3 _BoundsRange;
 
+float4 _RangeParams;
+
 struct appdata
 {
     float4 vertex : POSITION;
@@ -197,11 +199,60 @@ float4x4 GetMatrixRGBM(uint startIndex, float boneIndex)
     return m;
 }
 
+// 快速解码函数 - 使用预计算的常数
+float DecodeFloatFromRG(float2 rg, float range)
+{
+    // 优化版本：避免多次除法
+    // rg * 255.0 * 256.0 = rg * 65280.0
+    // 但我们需要 high*256 + low，所以：
+    // r * 255.0 * 256.0 + g * 255.0 = 255.0 * (r * 256.0 + g)
+    float fixed16 = 255.0 * (rg.r * 256.0 + rg.g);
+                
+    // 归一化并反归一化
+    // normalized = fixed16 / 65535.0
+    // result = normalized * (2.0 * range) - range
+    // 合并计算: result = fixed16 * (2.0 * range / 65535.0) - range
+    float scale = 2.0 * range / _RangeParams.w; // _RangeParams.w = 65535.0
+    float result = fixed16 * scale - range;
+                
+    return result;
+}
+            
+// 从颜色解码两个浮点数
+void DecodeTwoFloats(float4 color, float range1, float range2, out float f1, out float f2)
+{
+    f1 = DecodeFloatFromRG(color.rg, range1);
+    f2 = DecodeFloatFromRG(color.ba, range2);
+}
+
+//双16位浮点数解码
+float4x4 GetMatrixDual16FloatPair(uint startIndex, float boneIndex)
+{
+    float4x4 m = float4x4(0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,1);
+
+    //startIndex是这一帧的矩阵开始的索引
+    //boneIndex * 6是得到第几个骨骼矩阵索引的开始索引
+    uint matrixIndex = startIndex + boneIndex * 6;
+    //matrixIndex是这一帧的矩阵索引的这个骨骼索引的开始的像素索引
+    DecodeTwoFloats(tex2Dlod(_AnimTex, GetUV(matrixIndex)), _RangeParams.x, _RangeParams.x, m[0][0], m[0][1]);
+    DecodeTwoFloats(tex2Dlod(_AnimTex, GetUV(matrixIndex+1)), _RangeParams.x, _RangeParams.x, m[0][2], m[0][3]);		
+    DecodeTwoFloats(tex2Dlod(_AnimTex, GetUV(matrixIndex+2)), _RangeParams.x, _RangeParams.x, m[1][0], m[1][1]);		
+    DecodeTwoFloats(tex2Dlod(_AnimTex, GetUV(matrixIndex+3)), _RangeParams.x, _RangeParams.x, m[1][2], m[1][3]);		
+    DecodeTwoFloats(tex2Dlod(_AnimTex, GetUV(matrixIndex+4)), _RangeParams.x, _RangeParams.x, m[2][0], m[2][1]);		
+    DecodeTwoFloats(tex2Dlod(_AnimTex, GetUV(matrixIndex+5)), _RangeParams.x, _RangeParams.x, m[2][2], m[2][3]);		
+    
+    return m;
+}
+
 float4x4 GetMatrix(uint startIndex, float boneIndex)
 {
     #ifdef _FORMAT_RGBM
     return  GetMatrixRGBM(startIndex, boneIndex);
     #elif _FORMAT_RGBAHALF 
+    return  GetMatrixRGBHalf(startIndex, boneIndex);
+    #elif _FORMAT_DUAL16FP
+    return  GetMatrixDual16FloatPair(startIndex, boneIndex);
+    #else
     return  GetMatrixRGBHalf(startIndex, boneIndex);
     #endif
 }

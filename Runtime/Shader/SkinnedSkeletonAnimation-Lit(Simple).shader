@@ -36,7 +36,7 @@ Shader "GPUAnimation/SkinnedSkeleton-Lit(Simple)"
     	
 		[Header(GPU Animation)]
 		[NoScaleOffset] _AnimTex("Animation Texture", 2D) = "white" {}
-    	[KeywordEnum(RGBM, RGBAHALF)] _Format ("Animation Texture Format", Float) = 1
+    	[KeywordEnum(RGBM, RGBAHALF,DUAL16FP)] _Format ("Animation Texture Format", Float) = 1
     	[KeywordEnum(Bone1, Bone2,Bone4)] _Skin ("Skinned Quality", Float) = 2
         [Toggle(_INTERPOLATION)] _Interpolation ("Is Enable Interpolation", int) = 0
 
@@ -47,7 +47,7 @@ Shader "GPUAnimation/SkinnedSkeleton-Lit(Simple)"
 	    [PerRendererData]_OffsetSeconds("OffsetSeconds", Float) = 0
 	    [PerRendererData]_PixelCountPerFrame("PixelCountPerFrame", Int) = 0
     	[PerRendererData]_BoundsRange("BoundsRange(RGBM Only)", Vector) = (0,0,0,0)
-
+		[PerRendererData]_RangeParams ("Range Params(Dual16FP only)", Vector) = (10.0, 1.0, 5.0, 65535.0)
     }
 
     
@@ -55,7 +55,7 @@ Shader "GPUAnimation/SkinnedSkeleton-Lit(Simple)"
  	   //  #pragma exclude_renderers ps3 xbox360 flash xboxone ps4 psp2
 	    // #pragma skip_variants DYNAMICLIGHTMAP_ON DIRLIGHTMAP_COMBINED LIGHTMAP_ON
 	    // #pragma skip_variants SHADOWS_CUBE LIGHTMAP_SHADOW_MIXING SHADOWS_SHADOWMASK FOG_EXP FOG_EXP2
- 	    #pragma shader_feature_local_vertex _FORMAT_RGBM _FORMAT_RGBAHALF
+ 	    #pragma shader_feature_local_vertex _FORMAT_RGBM _FORMAT_RGBAHALF _FORMAT_DUAL16FP
  	    #pragma shader_feature_local_vertex _SKIN_BONE1 _SKIN_BONE2 _SKIN_BONE4
 		#pragma shader_feature_local_vertex  _INTERPOLATION
 

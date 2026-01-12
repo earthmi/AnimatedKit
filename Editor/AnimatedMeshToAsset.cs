@@ -258,6 +258,8 @@ namespace AnimatedKit
                     return TextureFormat.RGBAHalf;
                 case GPUAnimaTextureColorMode._RGBM:
                     return TextureFormat.RGBA32;
+                case GPUAnimaTextureColorMode._DUAL16FP:
+                    return TextureFormat.RGBA32;
                 default:
                     return TextureFormat.RGBAHalf;
             }
@@ -297,6 +299,33 @@ namespace AnimatedKit
                             pixelIndex++;
                         }
                     }
+                }
+            }else if (codeMode == GPUAnimaTextureColorMode._DUAL16FP)
+            {
+                foreach (var boneMatrix in smr.bones.Select((b, idx) => b.localToWorldMatrix * smr.sharedMesh.bindposes[idx]))
+                {
+                    var colors = MatrixTextureEncoder.EncodeMatrix4x3(boneMatrix);
+                    for (int i = 0; i < colors.Length; i++)
+                    {
+                        var c = colors[i];
+                        pixels[pixelIndex] = c;
+                        pixelIndex++;
+                    }
+                    // for (int row = 0; row < 3; row++)
+                    // {
+                    //     for (int col = 0; col < 4; col++)
+                    //     {
+                    //         float v = boneMatrix[row, col];
+                    //         Color c = EncodeFloatToRGBA32(v, minValue, maxValue);
+                    //         if (pixelIndex>= pixels.Length)
+                    //         {
+                    //             Debug.Log($"数组已经越界了，颜色缓冲：{pixels.Length},索引：{pixelIndex}");
+                    //             return;
+                    //         }
+                    //         pixels[pixelIndex] = c;
+                    //         pixelIndex++;
+                    //     }
+                    // }
                 }
             }
 
@@ -423,6 +452,9 @@ namespace AnimatedKit
                 case GPUAnimaTextureColorMode._RGBM:
                     //以RGBM编码存储，则8bit精度，则1个float转换精度，保存到一个color中，矩阵matrix3x4 数据3 x float4,则需要12个color
                     perFrameBoneMatrixPixels = BoneMatrixRowCount * 4 * boneLength;
+                    break;
+                case GPUAnimaTextureColorMode._DUAL16FP:
+                    perFrameBoneMatrixPixels = BoneMatrixRowCount * 2 * boneLength;
                     break;
                 default:
                     perFrameBoneMatrixPixels = BoneMatrixRowCount * boneLength;

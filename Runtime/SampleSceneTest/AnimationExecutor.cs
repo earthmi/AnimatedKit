@@ -70,7 +70,7 @@ namespace DefaultNamespace
 
             if (_isAutoPlaying)
             {
-                _timer += Time.deltaTime;
+                _timer += Time.deltaTime * speed;
                 if (_timer>= _length)
                 {
                     _playIndex ++;
