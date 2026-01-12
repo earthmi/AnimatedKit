@@ -22,6 +22,13 @@ namespace AnimatedKit
         BONE4 =2,
     }
     [Serializable]
+    public class ExposedBone
+    {
+        public int Index;
+        public Vector3 Position;
+        public Vector3 Direction;
+    }
+    [Serializable]
     public class AnimationTextureInfo
     {
         public GPUAnimaTextureColorMode format;
@@ -36,14 +43,16 @@ namespace AnimatedKit
         public Mesh animatedMesh;
         public Material[] materials;
         // public Material shadingMaterial;
+
+
         public GPUAnimaTextureColorMode currentUsingTexture;
-        private GPUAnimaTextureColorMode _currentUsingTexture;
         public SkinnedQuality currentSkinnedQuality;
-        private SkinnedQuality _currentSkinnedQuality;
-
         public bool isEnableInterpolation;
+        public List<ExposedBone> exposedBones;
+        [HideInInspector] public int currentTextureIndex = -1; 
+        private GPUAnimaTextureColorMode _currentUsingTexture;
+        private SkinnedQuality _currentSkinnedQuality;
         private bool _isEnableInterpolation;
-
         private void OnEnable()
         {
             Debug.Log($"启用GPUSkinnedAnimationData：{name}");
@@ -57,41 +66,53 @@ namespace AnimatedKit
             if (_currentUsingTexture!= currentUsingTexture)
             {
                 SetupTexture(currentUsingTexture);
-                _currentUsingTexture = currentUsingTexture;
             }
 
             if (_currentSkinnedQuality!= currentSkinnedQuality)
             {
                 SetupSkinnedQuality(currentSkinnedQuality);
-                _currentSkinnedQuality = currentSkinnedQuality;
             }
 
             if (_isEnableInterpolation!= isEnableInterpolation)
             {
                 SetupInterpolation();
-                _isEnableInterpolation = isEnableInterpolation;
             }
             
         }
 
         public void SetupInterpolation()
         {
+            if (materials is not {Length:>0})
+            {
+                Debug.LogError($"无法找到材质，无法开启或关闭线性插值");
+                return;
+            }
+
+            var keyword = "_INTERPOLATION";
             foreach (var VARIABLE in materials)
             {
                 VARIABLE.SetInt("_Interpolation",isEnableInterpolation?1:0);
                 if (isEnableInterpolation)
                 {
-                    VARIABLE.EnableKeyword("_INTERPOLATION");
+                    VARIABLE.EnableKeyword(keyword);
                 }
                 else
                 {
-                    VARIABLE.DisableKeyword("_INTERPOLATION");
+                    VARIABLE.DisableKeyword(keyword);
                 }
             }
+            _isEnableInterpolation = isEnableInterpolation;
+            Debug.Log($"成功切换线性插值模式：{isEnableInterpolation}");
+
         }
         
         public void SetupSkinnedQuality(SkinnedQuality quality)
         {
+            if (materials is not {Length:>0})
+            {
+                Debug.LogError($"无法找到材质，无法进行蒙皮骨骼数量切换");
+                return;
+            }
             foreach (var VARIABLE in materials)
             {
                 VARIABLE.SetFloat("_Skin",(float)quality);
@@ -108,16 +129,25 @@ namespace AnimatedKit
                     }
                 }
             }
+            _currentSkinnedQuality = currentSkinnedQuality;
+            Debug.Log($"成功切换到蒙皮骨骼数量：{currentSkinnedQuality}");
+
         }
-        
+
         public void SetupTexture(GPUAnimaTextureColorMode targetFormat)
         {
-            var texInfo = textures.Find((info => info.format == targetFormat));
-            if (texInfo ==null)
+            
+            var texIndex = textures.FindIndex((info => info.format == targetFormat));
+            if (texIndex <0)
             {
                 return;
             }
-
+            var texInfo = textures[texIndex];
+            if (materials is not {Length:>0})
+            {
+                Debug.LogError($"无法找到材质，无法进行贴图格式切换");
+                return;
+            }
             foreach (var VARIABLE in materials)
             {
                 VARIABLE.SetTexture("_AnimTex",texInfo.animatedTexture);
@@ -136,7 +166,9 @@ namespace AnimatedKit
                     }
                 }
             }
-            currentUsingTexture = targetFormat;
+            _currentUsingTexture = currentUsingTexture;
+            currentTextureIndex = texIndex;
+            Debug.Log($"成功切换到贴图格式：{currentUsingTexture}");
         }
     }
 }

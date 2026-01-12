@@ -151,16 +151,17 @@ namespace AnimatedKit
             WriteUnityFile(meshPath, mesh);
             // AssetDatabase.CreateAsset(mesh, $"{meshPath}_Mesh.asset");
 
-            var materials = GenerateMaterials(targetObject, skinnedMeshRenderer, textureInfos[0].animatedTexture, clips, skinnedMeshRenderer.bones.Length,TextureColorMode);
+            var materials = GenerateMaterials(skinnedMeshRenderer);
             foreach (var VARIABLE in materials)
-            {    
-                var materialPath = $"{filePathPre}_{VARIABLE.name}_mat.asset";
+            {
+                var matName = VARIABLE.name.Replace("(Clone)", "");
+                var materialPath = $"{filePathPre}_{matName}_mat.asset";
                 WriteUnityFile(materialPath, VARIABLE);
             }
             // AssetDatabase.CreateAsset(material, string.Format($"{{0}}/{FolderName}/{{1}}_Material.asset", selectionPath, targetObject.name));
 
-
-            var dataCollection = GenerateSO(GetAnimaFrameInfos(clips),textureInfos,mesh,materials,skinnedMeshRenderer.bones.Length);
+            var exposedBones = GetExposedBones(skinnedMeshRenderer);
+            var dataCollection = GenerateSO(GetAnimaFrameInfos(clips),textureInfos,mesh,materials,exposedBones);
             var dataCollectionPath = $"{filePathPre}_GPUAnimatedSO.asset";
             WriteUnityFile(dataCollectionPath, dataCollection);
             // AssetDatabase.CreateAsset(dataCollection, string.Format($"{{0}}/{FolderName}/{{1}}_GPUAnimatedSO.asset", selectionPath, targetObject.name));
@@ -173,7 +174,28 @@ namespace AnimatedKit
             Object.DestroyImmediate(go);
             AssetDatabase.Refresh();
         }
-        
+
+        static List<ExposedBone> GetExposedBones(SkinnedMeshRenderer smr)
+        {
+            List<ExposedBone> bones = new();
+            var rootWorldToLocal = smr.transform.worldToLocalMatrix;
+            for (int i = 0; i < smr.bones.Length; i++)
+            {
+                var b = smr.bones[i];
+                var exposedBone = b.GetComponent<GPUAnimationExposedBoneMark>();
+                if (exposedBone)
+                {
+                    bones.Add(new ExposedBone()
+                    {
+                        Index = i,
+                        Position = rootWorldToLocal.MultiplyPoint(b.position),
+                        Direction = rootWorldToLocal.MultiplyPoint(b.forward),
+                    });
+                }
+            }
+
+            return bones;
+        }
         
 
         static void WriteUnityFile(string path, Object target)
@@ -195,7 +217,7 @@ namespace AnimatedKit
         }
 
 
-        static GPUSkinnedAnimationData GenerateSO(List<AnimationFrameInfo> frameInfos,List<AnimationTextureInfo> textureInfos,Mesh mesh,Material[] mats,int boneLength)
+        static GPUSkinnedAnimationData GenerateSO(List<AnimationFrameInfo> frameInfos,List<AnimationTextureInfo> textureInfos,Mesh mesh,Material[] mats,List<ExposedBone> exposeBones)
         {
             var so = ScriptableObject.CreateInstance<GPUSkinnedAnimationData>();
             so.clipsInfo = frameInfos;
@@ -205,6 +227,7 @@ namespace AnimatedKit
             so.isEnableInterpolation = false;
             so.currentSkinnedQuality = SkinnedQuality.BONE1;
             so.currentUsingTexture = GPUAnimaTextureColorMode._RGBAHALF;
+            so.exposedBones = exposeBones;
             so.SetupInterpolation();
             so.SetupTexture(so.currentUsingTexture);
             so.SetupSkinnedQuality(so.currentSkinnedQuality);
@@ -426,7 +449,7 @@ namespace AnimatedKit
             return new Vector2(textureWidth, textureHeight);
         }
 
-        private static Material[] GenerateMaterials(GameObject targetObject, SkinnedMeshRenderer smr, Texture texture, IEnumerable<AnimationClip> clips, int boneLength,GPUAnimaTextureColorMode codeMode)
+        private static Material[] GenerateMaterials(SkinnedMeshRenderer smr)
         {
             Material[] mats = new Material[smr.sharedMaterials.Length];
             for (int i = 0; i < smr.sharedMaterials.Length; i++)
@@ -438,12 +461,6 @@ namespace AnimatedKit
                 material.enableInstancing = true;
                 mats[i] = material;
             }
-            // var material = Object.Instantiate(smr.sharedMaterial);
-            // var shaderPath = "GPUAnimation/SkinnedSkeleton-Lit(Low)";
-            // material.shader = Shader.Find(shaderPath);
-            // material.SetVector("_BoundsRange", new Vector2(minValue,maxValue));
-            // material.enableInstancing = true;
-
             return mats;
         }
 

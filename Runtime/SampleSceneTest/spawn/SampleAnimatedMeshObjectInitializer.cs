@@ -22,10 +22,10 @@ public class SampleAnimatedMeshObjectInitializer : MonoBehaviour
         BodyPropertyBlockController.SetColor("_Color", randomColor);
         BodyPropertyBlockController.Apply();
 
-        var offsetSeconds = Random.Range(0.0f, 3.0f);
+        // var offsetSeconds = Random.Range(0.0f, 3.0f);
         var randomIndex = Random.Range(0, RandomAnimationNames.Length);
         var randomAnimationNames = RandomAnimationNames[randomIndex];
 
-        BodyMeshAnimator.Play(randomAnimationNames, offsetSeconds);
+        BodyMeshAnimator.Play(randomAnimationNames);
     }
 }

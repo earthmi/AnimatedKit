@@ -211,9 +211,9 @@ uint GetCurrentFramePixelBeginIndex()
     uint startFrame = UNITY_ACCESS_INSTANCED_PROP(_StartFrame_arr, _StartFrame);
     // int endFrame = UNITY_ACCESS_INSTANCED_PROP(_EndFrame_arr, _EndFrame);
     uint frameCount = UNITY_ACCESS_INSTANCED_PROP(_FrameCount_arr, _FrameCount);
-    float offsetSeconds = UNITY_ACCESS_INSTANCED_PROP(_OffsetSeconds_arr, _OffsetSeconds);
+    // float offsetSeconds = UNITY_ACCESS_INSTANCED_PROP(_OffsetSeconds_arr, _OffsetSeconds);
     float keepingTime = UNITY_ACCESS_INSTANCED_PROP(_KeepingTime_arr, _KeepingTime);
-    uint offsetFrame = (uint)((keepingTime + offsetSeconds) * 30);
+    uint offsetFrame = (uint)(keepingTime * 30);
     uint currentFrame = startFrame + clamp(offsetFrame,0,frameCount-1) ; // mod_int(offsetFrame,frameCount);// offsetFrame % frameCount;
     uint pixelBeginIndex = currentFrame * _PixelCountPerFrame;//这一帧的骨骼矩阵像素数据的开始的像素索引 
     return pixelBeginIndex;
@@ -272,8 +272,8 @@ AnimatedVertexInfo GetAnimationInfo(float4 originVert,float3 originNormal,half4 
 #if _INTERPOLATION
     uint startFrame = UNITY_ACCESS_INSTANCED_PROP(_StartFrame_arr, _StartFrame);
     uint frameCount = UNITY_ACCESS_INSTANCED_PROP(_FrameCount_arr, _FrameCount);
-    float offsetSeconds = UNITY_ACCESS_INSTANCED_PROP(_OffsetSeconds_arr, _OffsetSeconds);
-    float keepingTime = UNITY_ACCESS_INSTANCED_PROP(_KeepingTime_arr, _KeepingTime)+ offsetSeconds;
+    // float offsetSeconds = UNITY_ACCESS_INSTANCED_PROP(_OffsetSeconds_arr, _OffsetSeconds);
+    float keepingTime = UNITY_ACCESS_INSTANCED_PROP(_KeepingTime_arr, _KeepingTime);
     float fFrame = (keepingTime * 30);
     uint offsetFrame = (uint)fFrame;
     uint offsetFrameNext = offsetFrame+1;

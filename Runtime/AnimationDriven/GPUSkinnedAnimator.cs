@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace AnimatedKit
 {
@@ -13,7 +14,8 @@ namespace AnimatedKit
         MaterialPropertyBlockController PropertyBlockController;
 
         [SerializeField] private GPUSkinnedAnimationData SkinnedAnimaInfo;
-
+        [SerializeField] private List<Transform> exposedBones;
+        [SerializeField] private Transform exposedBoneRoot;
         public Material[] SharedMaterials => SkinnedAnimaInfo.materials;
         public List<AnimationTextureInfo> TextureInfos => SkinnedAnimaInfo.textures;
         public List<AnimationFrameInfo> Clips=> SkinnedAnimaInfo.clipsInfo;
@@ -26,6 +28,22 @@ namespace AnimatedKit
         {
             SkinnedAnimaInfo = data;
             PropertyBlockController = propertyBlockController;
+            if (data.exposedBones is  {Count:<=0})
+            {
+                return;
+            }
+            exposedBoneRoot = new GameObject("ExposedBones").transform;
+            exposedBoneRoot.SetParent(transform);
+            exposedBoneRoot.localPosition = Vector3.zero;
+            exposedBoneRoot.localRotation = Quaternion.identity;
+            exposedBoneRoot.localScale = Vector3.one;
+            exposedBones = new(data.exposedBones.Count);
+            for (int i = 0; i < data.exposedBones.Count; i++)
+            {
+                var b = new GameObject($"Index:{data.exposedBones[i].Index}").transform;
+                b.SetParent(exposedBoneRoot);
+                exposedBones.Add(b);
+            }
         }
         
         public void SetSpeed(float s)
@@ -35,13 +53,13 @@ namespace AnimatedKit
 
         public void Play(string state)
         {
-            Play(state, 0);
+            Play(state,null);
         }
 
-        public void Play(string state, Action callback)
-        {
-            Play(state, 0,callback);
-        }
+        // public void Play(string state, Action callback)
+        // {
+        //     Play(state,callback);
+        // }
 
         public float GetLength(string state)
         {
@@ -86,13 +104,13 @@ namespace AnimatedKit
 
         private int _playingIndex=-1;
         public Action OnComplete;
-        public bool Play(string animationName, float offsetSeconds=0f,Action onComplete = null)
+        public void Play(string animationName,Action onComplete = null)
         {
             var i = SkinnedAnimaInfo.clipsInfo.FindIndex(x => x.Name == animationName);
             if (i==-1)
             {
                 Debug.LogError($"无法找到动画名为：{animationName} 的动画");
-                return false;
+                return;
             }
             
             OnComplete?.Invoke();
@@ -109,14 +127,13 @@ namespace AnimatedKit
                 }
             }
 
-            PropertyBlockController.SetFloat("_OffsetSeconds", offsetSeconds);
+            // PropertyBlockController.SetFloat("_OffsetSeconds", offsetSeconds);
             PropertyBlockController.SetFloat("_StartFrame", frameInformation.StartFrame);
             PropertyBlockController.SetFloat("_EndFrame", frameInformation.EndFrame);
             PropertyBlockController.SetFloat("_FrameCount", frameInformation.FrameCount);
             PropertyBlockController.Apply();
 
             IsPlaying = true;
-            return true;
         }
 
         public void PlayNext(float offsetSeconds)
@@ -134,7 +151,7 @@ namespace AnimatedKit
                     i = 0;
                 }
             }
-            Play(SkinnedAnimaInfo.clipsInfo[i].Name,offsetSeconds);
+            Play(SkinnedAnimaInfo.clipsInfo[i].Name);
         }
 
         public void Stop()
@@ -163,6 +180,95 @@ namespace AnimatedKit
         private void Update()
         {
             Tick();
+        }
+
+
+        void UpdateExposedBones(AnimationFrameInfo clip)
+        {
+
+            if (SkinnedAnimaInfo.exposedBones is {Count:<=0})
+            {
+                return;
+            }
+
+            if (exposedBones is {Count:<=0})
+            {
+                return;
+            }
+
+            var texIndex = SkinnedAnimaInfo.currentTextureIndex;
+            if (texIndex<0)
+            {
+                return;
+            }
+
+            if (SkinnedAnimaInfo.currentUsingTexture != GPUAnimaTextureColorMode._RGBAHALF)
+            {
+                return;
+            }
+            var keepingTime = time * 30;
+            int currentFrame = clip.StartFrame + Mathf.Clamp((int)keepingTime, 0, clip.FrameCount - 1);
+            int pixelBeginIndex = currentFrame * SkinnedAnimaInfo.textures[texIndex].pixelCountPerFrame;//这一帧的骨骼矩阵像素数据的开始的像素索引 
+            var texture = SkinnedAnimaInfo.textures[SkinnedAnimaInfo.currentTextureIndex].animatedTexture as Texture2D;
+            for (int i = 0; i < SkinnedAnimaInfo.exposedBones.Count; i++)
+            {
+                var boneTrans = exposedBones[i];
+                var boneInfo = SkinnedAnimaInfo.exposedBones[i];
+                var boneIndex = boneInfo.Index;
+                Matrix4x4 recordMatrix = new Matrix4x4();
+
+                int matrixBeginIndex = pixelBeginIndex + boneIndex * 3;
+                var (row0U,row0V) = GetMatrixUV(matrixBeginIndex,texture);
+                var (row1U,row1V) = GetMatrixUV(matrixBeginIndex+1,texture);
+                var (row2U,row2V) = GetMatrixUV(matrixBeginIndex+2,texture);
+                recordMatrix.SetRow(0,texture.GetPixel(row0U,row0V));
+                recordMatrix.SetRow(1,texture.GetPixel(row1U,row1V));
+                recordMatrix.SetRow(2,texture.GetPixel(row2U,row2V));
+                recordMatrix.SetRow(3, new Vector4(0, 0, 0, 1));
+
+                boneTrans.localPosition = recordMatrix.MultiplyPoint(boneInfo.Position);
+                boneTrans.localRotation = Quaternion.LookRotation(recordMatrix.MultiplyVector(boneInfo.Direction));
+
+            }       
+        }
+
+        (int, int) GetMatrixUV(int pixelIndex,Texture texture)
+        {
+            int width =texture.width;
+            // int height =texture.height;
+            int row = Mathf.FloorToInt(pixelIndex / (float)width);
+            int column =  pixelIndex % width;
+            return (column, row);
+        }
+        
+
+        void UpdateEvents(AnimationFrameInfo clip)
+        {
+            if (clip.animatedEvents == null)
+            {
+                return;
+            }
+            foreach (var eventTrigger in clip.animatedEvents)
+            {
+                if (string.IsNullOrEmpty(eventTrigger.eventName))
+                {
+                    continue;
+                }
+                if (eventTrigger.hasTriggered && eventTrigger.lastTriggerTime> NormalizeTime)
+                {
+                    eventTrigger.hasTriggered = false;
+                }
+                if (!eventTrigger.hasTriggered && NormalizeTime >= eventTrigger.triggerTime)
+                {
+                    var hash = eventTrigger.eventName.GetHashCode();
+                    if (_clipEvent.TryGetValue(hash,out var e))
+                    {
+                        e?.Invoke();
+                    }
+                    eventTrigger.hasTriggered = true;
+                    eventTrigger.lastTriggerTime = NormalizeTime;
+                }
+            }
         }
 
         public void Tick()
@@ -195,34 +301,9 @@ namespace AnimatedKit
             }
             PropertyBlockController.SetFloat("_KeepingTime",time);
             NormalizeTime = Mathf.InverseLerp(0, clip.Seconds, time);
-
-
             PropertyBlockController.Apply();
-            if (clip.animatedEvents == null)
-            {
-                return;
-            }
-            foreach (var eventTrigger in clip.animatedEvents)
-            {
-                if (string.IsNullOrEmpty(eventTrigger.eventName))
-                {
-                    continue;
-                }
-                if (eventTrigger.hasTriggered && eventTrigger.lastTriggerTime> NormalizeTime)
-                {
-                    eventTrigger.hasTriggered = false;
-                }
-                if (!eventTrigger.hasTriggered && NormalizeTime >= eventTrigger.triggerTime)
-                {
-                    var hash = eventTrigger.eventName.GetHashCode();
-                    if (_clipEvent.TryGetValue(hash,out var e))
-                    {
-                        e?.Invoke();
-                    }
-                    eventTrigger.hasTriggered = true;
-                    eventTrigger.lastTriggerTime = NormalizeTime;
-                }
-            }
+            UpdateExposedBones(clip);
+            UpdateEvents(clip);
         }
 
         public void SetNormalizeTime(float t)
