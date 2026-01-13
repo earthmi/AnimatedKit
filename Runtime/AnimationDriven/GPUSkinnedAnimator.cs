@@ -233,29 +233,6 @@ namespace AnimatedKit
                     boneTrans.localPosition = localPosCur;
                     boneTrans.localRotation = localRotationCur;
                 }
-                
-                // Matrix4x4 recordMatrix = new Matrix4x4();
-                //
-                // switch (SkinnedAnimaInfo.currentUsingTexture)
-                // {
-                //     case GPUAnimaTextureColorMode._RGBAHALF:
-                //         int matrixBeginIndex = pixelBeginIndex + boneIndex * 3;
-                //         var (row0U,row0V) = GetMatrixTextureCoordinate(matrixBeginIndex,texture);
-                //         var (row1U,row1V) = GetMatrixTextureCoordinate(matrixBeginIndex+1,texture);
-                //         var (row2U,row2V) = GetMatrixTextureCoordinate(matrixBeginIndex+2,texture);
-                //         recordMatrix.SetRow(0,texture.GetPixel(row0U,row0V));
-                //         recordMatrix.SetRow(1,texture.GetPixel(row1U,row1V));
-                //         recordMatrix.SetRow(2,texture.GetPixel(row2U,row2V));
-                //         recordMatrix.SetRow(3, new Vector4(0, 0, 0, 1));
-                //         break;
-                //     case GPUAnimaTextureColorMode._DUAL16FP:
-                //         break;
-                //     default:
-                //         continue;
-                //         break;
-                // }
-                // boneTrans.localPosition = recordMatrix.MultiplyPoint(boneInfo.Position);
-                // boneTrans.localRotation = Quaternion.LookRotation(recordMatrix.MultiplyVector(boneInfo.Direction));
             }       
         }
 

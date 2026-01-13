@@ -182,7 +182,7 @@ fixed4 fragSimpleLit(vertexOut i) : SV_Target
 	half specularTerm = pow(ndoth, specularPower);
 	half3 specular = _LightColor0.rgb *  specularTerm * _SpecularPower ;
 	// 添加环境光和顶点颜色
-	half3 ambient = UNITY_LIGHTMODEL_AMBIENT.rgb * Albedo.rgb;
+	half3 ambient = UNITY_LIGHTMODEL_AMBIENT.rgb * Albedo.rgb * _AmbientIntensity;
 	//统一管理光照衰减和阴影
 	UNITY_LIGHT_ATTENUATION(atten,i,i.worldPos);
 	// 最终颜色

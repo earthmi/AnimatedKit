@@ -12,6 +12,9 @@ Shader "MiniGame/Standard-Lit(Simple)"
     	[Header(Specular)]
     	[Gamma]_SpecularPower("Specular Power",Range(0,1))=0
     	_Smoothness("Smoothness(Metallic.a)",Range(0,1))=0.5
+        
+    	[Header(Ambient)]
+    	_AmbientIntensity("Ambient Intensity", Range(1, 3)) = 1.0
     	
     	[Header(RimLight)]
     	[Toggle(_RimLight)] _RimLightEnable ("Is Enable Rim Light", Int) = 0
