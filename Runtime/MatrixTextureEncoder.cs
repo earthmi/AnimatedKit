@@ -5,7 +5,7 @@ namespace AnimatedKit
     public class MatrixTextureEncoder
     {
         // 编码参数
-        private const float POSITION_RANGE = 10f;  // 位置范围±10米
+        public const float POSITION_RANGE = 10f;  // 位置范围±10米
         private const float ROTATION_RANGE = 1.414f; // 旋转范围(-√2, √2)，四元数分量范围
         private const float SCALE_RANGE = 5f;      // 缩放范围0-5倍
         
@@ -116,8 +116,10 @@ namespace AnimatedKit
         /// <summary>
         /// 解码Color32为两个浮点数
         /// </summary>
-        public static void DecodeTwoFloats(Color32 color, float rangeA, float rangeB, out float a, out float b)
+        public static void DecodeTwoFloats(Color32 color, out float a, out float b)
         {
+            float rangeA = POSITION_RANGE;
+            float rangeB = POSITION_RANGE;
             a = DecodeFloat16(color.r, color.g, rangeA);
             b = DecodeFloat16(color.b, color.a, rangeB);
         }
@@ -147,12 +149,12 @@ namespace AnimatedKit
             // 解码各分量
             float m00, m01, m02, m10, m11, m12, m20, m21, m22, m30, m31, m32;
             
-            DecodeTwoFloats(colors[0], POSITION_RANGE, POSITION_RANGE, out m00, out m01);
-            DecodeTwoFloats(colors[1], POSITION_RANGE, POSITION_RANGE, out m02, out m10);
-            DecodeTwoFloats(colors[2], POSITION_RANGE, POSITION_RANGE, out m11, out m12);
-            DecodeTwoFloats(colors[3], POSITION_RANGE, POSITION_RANGE, out m20, out m21);
-            DecodeTwoFloats(colors[4], POSITION_RANGE, POSITION_RANGE, out m22, out m30);
-            DecodeTwoFloats(colors[5], POSITION_RANGE, POSITION_RANGE, out m31, out m32);
+            DecodeTwoFloats(colors[0], out m00, out m01);
+            DecodeTwoFloats(colors[1], out m02, out m10);
+            DecodeTwoFloats(colors[2], out m11, out m12);
+            DecodeTwoFloats(colors[3], out m20, out m21);
+            DecodeTwoFloats(colors[4], out m22, out m30);
+            DecodeTwoFloats(colors[5], out m31, out m32);
             
             // 重建矩阵
             Matrix4x4 matrix = new Matrix4x4();

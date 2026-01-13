@@ -202,37 +202,110 @@ namespace AnimatedKit
                 return;
             }
 
-            if (SkinnedAnimaInfo.currentUsingTexture != GPUAnimaTextureColorMode._RGBAHALF)
+            if (SkinnedAnimaInfo.currentUsingTexture == GPUAnimaTextureColorMode._RGBM)
             {
                 return;
             }
-            var keepingTime = time * 30;
-            int currentFrame = clip.StartFrame + Mathf.Clamp((int)keepingTime, 0, clip.FrameCount - 1);
-            int pixelBeginIndex = currentFrame * SkinnedAnimaInfo.textures[texIndex].pixelCountPerFrame;//这一帧的骨骼矩阵像素数据的开始的像素索引 
+            var fFrame = time * 30;
+            int frameFloor = Mathf.FloorToInt(fFrame);
+            int frameCeil = Mathf.CeilToInt(fFrame);
+            int currentFrame = clip.StartFrame + Mathf.Clamp(frameFloor, 0, clip.FrameCount - 1);
+            int nextFrame = clip.StartFrame + Mathf.Clamp(frameCeil, 0, clip.FrameCount - 1);
+            int pixelBeginIndexCurrentFrame = currentFrame * SkinnedAnimaInfo.textures[texIndex].pixelCountPerFrame;//这一帧的骨骼矩阵像素数据的开始的像素索引 
+            int pixelBeginIndexNextFrame = nextFrame * SkinnedAnimaInfo.textures[texIndex].pixelCountPerFrame;//这一帧的骨骼矩阵像素数据的开始的像素索引
             var texture = SkinnedAnimaInfo.textures[SkinnedAnimaInfo.currentTextureIndex].animatedTexture as Texture2D;
             for (int i = 0; i < SkinnedAnimaInfo.exposedBones.Count; i++)
             {
                 var boneTrans = exposedBones[i];
                 var boneInfo = SkinnedAnimaInfo.exposedBones[i];
-                var boneIndex = boneInfo.Index;
-                Matrix4x4 recordMatrix = new Matrix4x4();
+                var (localPosCur,localRotationCur) = GetAnimationBoneTransform(boneInfo,pixelBeginIndexCurrentFrame,texture);
 
-                int matrixBeginIndex = pixelBeginIndex + boneIndex * 3;
-                var (row0U,row0V) = GetMatrixUV(matrixBeginIndex,texture);
-                var (row1U,row1V) = GetMatrixUV(matrixBeginIndex+1,texture);
-                var (row2U,row2V) = GetMatrixUV(matrixBeginIndex+2,texture);
-                recordMatrix.SetRow(0,texture.GetPixel(row0U,row0V));
-                recordMatrix.SetRow(1,texture.GetPixel(row1U,row1V));
-                recordMatrix.SetRow(2,texture.GetPixel(row2U,row2V));
-                recordMatrix.SetRow(3, new Vector4(0, 0, 0, 1));
+                if (SkinnedAnimaInfo.isEnableInterpolation)
+                {
+                    float percent = fFrame - frameFloor;
 
-                boneTrans.localPosition = recordMatrix.MultiplyPoint(boneInfo.Position);
-                boneTrans.localRotation = Quaternion.LookRotation(recordMatrix.MultiplyVector(boneInfo.Direction));
-
+                    var (localPosNext,localRotationNext) = GetAnimationBoneTransform(boneInfo,pixelBeginIndexNextFrame,texture);
+                    boneTrans.localPosition = Vector3.Lerp(localPosCur,localPosNext,percent);
+                    boneTrans.localRotation = Quaternion.Lerp(localRotationCur,localRotationNext,percent);
+                }
+                else
+                {
+                    boneTrans.localPosition = localPosCur;
+                    boneTrans.localRotation = localRotationCur;
+                }
+                
+                // Matrix4x4 recordMatrix = new Matrix4x4();
+                //
+                // switch (SkinnedAnimaInfo.currentUsingTexture)
+                // {
+                //     case GPUAnimaTextureColorMode._RGBAHALF:
+                //         int matrixBeginIndex = pixelBeginIndex + boneIndex * 3;
+                //         var (row0U,row0V) = GetMatrixTextureCoordinate(matrixBeginIndex,texture);
+                //         var (row1U,row1V) = GetMatrixTextureCoordinate(matrixBeginIndex+1,texture);
+                //         var (row2U,row2V) = GetMatrixTextureCoordinate(matrixBeginIndex+2,texture);
+                //         recordMatrix.SetRow(0,texture.GetPixel(row0U,row0V));
+                //         recordMatrix.SetRow(1,texture.GetPixel(row1U,row1V));
+                //         recordMatrix.SetRow(2,texture.GetPixel(row2U,row2V));
+                //         recordMatrix.SetRow(3, new Vector4(0, 0, 0, 1));
+                //         break;
+                //     case GPUAnimaTextureColorMode._DUAL16FP:
+                //         break;
+                //     default:
+                //         continue;
+                //         break;
+                // }
+                // boneTrans.localPosition = recordMatrix.MultiplyPoint(boneInfo.Position);
+                // boneTrans.localRotation = Quaternion.LookRotation(recordMatrix.MultiplyVector(boneInfo.Direction));
             }       
         }
 
-        (int, int) GetMatrixUV(int pixelIndex,Texture texture)
+        (Vector3,Quaternion) GetAnimationBoneTransform(ExposedBone bone,int pixelBeginIndex,Texture2D texture)
+        {
+            if (SkinnedAnimaInfo.currentUsingTexture == GPUAnimaTextureColorMode._RGBM)
+            {
+                return (default);
+            }
+            Matrix4x4 recordMatrix = new Matrix4x4();
+            int matrixBeginIndex = 0;
+            switch (SkinnedAnimaInfo.currentUsingTexture)
+            {
+                case GPUAnimaTextureColorMode._DUAL16FP:
+                    matrixBeginIndex = pixelBeginIndex + bone.Index * 6;
+                    var (color0U,color0V) = GetMatrixTextureCoordinate(matrixBeginIndex,texture);
+                    var (color1U,color1V) = GetMatrixTextureCoordinate(matrixBeginIndex+1,texture);
+                    var (color2U,color2V) = GetMatrixTextureCoordinate(matrixBeginIndex+2,texture);
+                    var (color3U,color3V) = GetMatrixTextureCoordinate(matrixBeginIndex+3,texture);
+                    var (color4U,color4V) = GetMatrixTextureCoordinate(matrixBeginIndex+4,texture);
+                    var (color5U,color5V) = GetMatrixTextureCoordinate(matrixBeginIndex+5,texture);
+
+                    MatrixTextureEncoder.DecodeTwoFloats(texture.GetPixel(color0U,color0V),out var m01,out var m02);
+                    MatrixTextureEncoder.DecodeTwoFloats(texture.GetPixel(color1U,color1V),out var m03,out var m04);
+                    MatrixTextureEncoder.DecodeTwoFloats(texture.GetPixel(color2U,color2V),out var m11,out var m12);
+                    MatrixTextureEncoder.DecodeTwoFloats(texture.GetPixel(color3U,color3V),out var m13,out var m14);
+                    MatrixTextureEncoder.DecodeTwoFloats(texture.GetPixel(color4U,color4V),out var m21,out var m22);
+                    MatrixTextureEncoder.DecodeTwoFloats(texture.GetPixel(color5U,color5V),out var m23,out var m24);
+                    recordMatrix.SetRow(0,new Vector4(m01,m02,m03,m04));
+                    recordMatrix.SetRow(1,new Vector4(m11,m12,m13,m14));
+                    recordMatrix.SetRow(2,new Vector4(m21,m22,m23,m24));
+                    break;
+                case GPUAnimaTextureColorMode._RGBAHALF:
+                    matrixBeginIndex = pixelBeginIndex + bone.Index * 3;
+                    var (row0U,row0V) = GetMatrixTextureCoordinate(matrixBeginIndex,texture);
+                    var (row1U,row1V) = GetMatrixTextureCoordinate(matrixBeginIndex+1,texture);
+                    var (row2U,row2V) = GetMatrixTextureCoordinate(matrixBeginIndex+2,texture);
+                    recordMatrix.SetRow(0,texture.GetPixel(row0U,row0V));
+                    recordMatrix.SetRow(1,texture.GetPixel(row1U,row1V));
+                    recordMatrix.SetRow(2,texture.GetPixel(row2U,row2V));
+                    break;
+            }
+            recordMatrix.SetRow(3, new Vector4(0, 0, 0, 1));
+
+            var localPos = recordMatrix.MultiplyPoint(bone.Position);
+            var localRotation = Quaternion.LookRotation(recordMatrix.MultiplyVector(bone.Direction));
+            return (localPos, localRotation);
+        }
+
+        (int, int) GetMatrixTextureCoordinate(int pixelIndex,Texture texture)
         {
             int width =texture.width;
             // int height =texture.height;
