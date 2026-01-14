@@ -1,18 +1,11 @@
 {
   "name": "wayne.animatedkit",
   "version": "0.1.6",
-  "displayName": "Animated Kit",
+  "displayName": "Animated Kit(OnlyCode)",
   "description": "GPU skinned skeleton animation support in build in pipeline, and rim light,dissolve shader feature support",
   "author": {
     "name": "Zhao Wei",
     "email": "bfeiowtgruy@qq.com",
     "url": "https://github.com/earthmi"
-  },
-  "samples":[
-    {
-      "displayName": "AllSamples",
-      "description": "contains 6 different scenes with different samples compare.",
-      "path": "Samples~/AllSample"
-    }
-  ]
+  }
 }
