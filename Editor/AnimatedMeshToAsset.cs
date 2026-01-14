@@ -41,7 +41,7 @@ namespace AnimatedKit
         private static readonly string FolderName = "GPUAnimatedData";
         static Dictionary<Transform, PoseData> originalPose;
 
-        [MenuItem("AnimatedMeshRendererGenerator/TPose")]
+        [MenuItem("GPU Animated Kit/Humanoid TPose")]
         static void TPose()
         {
             var targetObject = Selection.activeGameObject;
@@ -90,7 +90,7 @@ namespace AnimatedKit
                 }
             }
         }
-        [MenuItem("AnimatedMeshRendererGenerator/MeshToAsset")]
+        [MenuItem("GPU Animated Kit/Bake skinned skeleton to asset")]
         private static void Generate()
         {
             var targetObject = Selection.activeGameObject;
