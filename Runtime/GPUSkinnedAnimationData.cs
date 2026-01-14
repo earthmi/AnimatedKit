@@ -63,7 +63,7 @@ namespace AnimatedKit
             _isEnableInterpolation = isEnableInterpolation;
         }
 
-        private void OnValidate()
+        public void OnValidate()
         {
             if (_currentUsingTexture!= currentUsingTexture)
             {

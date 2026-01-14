@@ -45,6 +45,12 @@ namespace AnimatedKit
             // Renderer.material = material;
             Renderer.sharedMaterial = material;
         }
+        
+        public void SetMaterials(Material[] materials)
+        {
+            Renderer.sharedMaterials = materials;
+        }
+        
         public void EnableKeyWord(string kw)
         {
             Renderer.material.EnableKeyword(kw);

@@ -57,7 +57,7 @@ Shader "MiniGame/Standard-Lit(Simple)"
             #pragma fragment fragSimpleLit
             struct a2v
             {
-                 float4 pos : POSITION;
+                 float4 vertex : POSITION;
                  float3 normal:NORMAL;
                  float2 uv : TEXCOORD0;
                  float2 uv1:TEXCOORD1;
@@ -99,8 +99,8 @@ Shader "MiniGame/Standard-Lit(Simple)"
             {
 				UNITY_SETUP_INSTANCE_ID(v);
                 vertexOut o =(vertexOut)0;
-                o.pos = UnityObjectToClipPos(v.pos);
-                o.worldPos = mul(unity_ObjectToWorld, v.pos);
+                o.pos = UnityObjectToClipPos(v.vertex);
+                o.worldPos = mul(unity_ObjectToWorld, v.vertex);
                 o.uv = TRANSFORM_TEX(v.uv, _MainTex);
                 o.worldNormal=UnityObjectToWorldNormal(v.normal);
                 

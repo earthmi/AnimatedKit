@@ -56,6 +56,12 @@ namespace AnimatedKit
             Play(state,null);
         }
 
+        public void SetTextureEncodeMode(GPUAnimaTextureColorMode encodeMode)
+        {
+            SkinnedAnimaInfo.currentUsingTexture = encodeMode;
+            SkinnedAnimaInfo.OnValidate();
+        }
+
         // public void Play(string state, Action callback)
         // {
         //     Play(state,callback);
