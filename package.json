@@ -1,6 +1,6 @@
 {
   "name": "wayne.animatedkit",
-  "version": "0.1.0",
+  "version": "0.1.6",
   "displayName": "Animated Kit",
   "description": "GPU skinned skeleton animation support in build in pipeline, and rim light,dissolve shader feature support",
   "author": {
@@ -23,6 +23,11 @@
       "displayName": "SampleMultipleMaterials",
       "description": "show a mesh with two materials use GPU skinned skeleton animation",
       "path": "Samples~/SampleMultipleMaterials"
+    },
+    {
+      "displayName": "LevelOfMaterials",
+      "description": "three different realistic materials with three different performances",
+      "path": "Samples~/SampleMaterials"
     }
   ]
 }
