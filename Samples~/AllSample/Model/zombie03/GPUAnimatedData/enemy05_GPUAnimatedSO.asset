@@ -1,0 +1,85 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: edde2215cdaf4207bec6ffeecd16e855, type: 3}
+  m_Name: enemy05_GPUAnimatedSO
+  m_EditorClassIdentifier: 
+  clipsInfo:
+  - Name: idle
+    StartFrame: 1
+    EndFrame: 40
+    FrameCount: 40
+    Seconds: 1.3333334
+    isEditorPreviewing: 0
+    IsLoop: 1
+    animatedEvents: []
+  - Name: attack01
+    StartFrame: 41
+    EndFrame: 100
+    FrameCount: 60
+    Seconds: 2
+    isEditorPreviewing: 0
+    IsLoop: 0
+    animatedEvents:
+    - eventName: AttackClipStart
+      triggerTime: 0.41130605
+      hasTriggered: 1
+      lastTriggerTime: 0.41328582
+    - eventName: AttackClipEnd
+      triggerTime: 0.6998051
+      hasTriggered: 1
+      lastTriggerTime: 0.7004321
+  - Name: death
+    StartFrame: 101
+    EndFrame: 151
+    FrameCount: 51
+    Seconds: 1.7
+    isEditorPreviewing: 0
+    IsLoop: 0
+    animatedEvents: []
+  - Name: walk
+    StartFrame: 152
+    EndFrame: 199
+    FrameCount: 48
+    Seconds: 1.6000001
+    isEditorPreviewing: 0
+    IsLoop: 1
+    animatedEvents: []
+  - Name: run
+    StartFrame: 200
+    EndFrame: 227
+    FrameCount: 28
+    Seconds: 0.9333334
+    isEditorPreviewing: 0
+    IsLoop: 1
+    animatedEvents: []
+  textures:
+  - format: 0
+    animatedTexture: {fileID: 2800000, guid: 8843943848afbb14aa711b2b8ce2ab2b, type: 2}
+    pixelCountPerFrame: 420
+  - format: 1
+    animatedTexture: {fileID: 2800000, guid: e0ccb8611da9cbe4998cbf5864c38dba, type: 2}
+    pixelCountPerFrame: 105
+  - format: 2
+    animatedTexture: {fileID: 2800000, guid: cb50eb4cfb991a14e92df309ba0db6fa, type: 2}
+    pixelCountPerFrame: 210
+  animatedMesh: {fileID: 4300000, guid: c364d3b56d0beaf4095cce3a9c48d523, type: 2}
+  materials:
+  - {fileID: 2100000, guid: 04bd47316f589aa45b70e595a605974c, type: 2}
+  - {fileID: 2100000, guid: 62218a9c079d1e64ebf568b84680d0f9, type: 2}
+  currentUsingTexture: 1
+  currentSkinnedQuality: 2
+  isEnableInterpolation: 1
+  exposedBones:
+  - Index: 30
+    Position: {x: 0.6469417, y: 0.0024037787, z: 1.0828297}
+    Direction: {x: -0.120496005, y: -0.6345666, z: 0.16507724}
+  currentTextureIndex: 1

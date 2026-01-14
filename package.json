@@ -10,24 +10,9 @@
   },
   "samples":[
     {
-      "displayName": "SimpleSample",
-      "description": "show GPU skinned skeleton animations and performances",
-      "path": "Samples~/Sample1"
-    },
-    {
-      "displayName": "SampleTextureFormatCompare",
-      "description": "show two different animation matrix textures performances",
-      "path": "Samples~/SampleTextureFormatCompare"
-    },
-    {
-      "displayName": "SampleMultipleMaterials",
-      "description": "show a mesh with two materials use GPU skinned skeleton animation",
-      "path": "Samples~/SampleMultipleMaterials"
-    },
-    {
-      "displayName": "LevelOfMaterials",
-      "description": "three different realistic materials with three different performances",
-      "path": "Samples~/SampleMaterials"
+      "displayName": "AllSamples",
+      "description": "contains 6 different scenes with different samples compare.",
+      "path": "Samples~/AllSample"
     }
   ]
 }
