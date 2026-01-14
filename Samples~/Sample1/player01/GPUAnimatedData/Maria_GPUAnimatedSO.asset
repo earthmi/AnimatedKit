@@ -76,6 +76,14 @@ MonoBehaviour:
   - format: 1
     animatedTexture: {fileID: 2800000, guid: 761fe477920f83143ae4ff88de1396e6, type: 2}
     pixelCountPerFrame: 195
+  - format: 2
+    animatedTexture: {fileID: 2800000, guid: 488c9cbf71bad68468db4f28bd465d91, type: 2}
+    pixelCountPerFrame: 390
   animatedMesh: {fileID: 4300000, guid: 889a0db131c04b447955627735ee9c23, type: 2}
-  shadingMaterial: {fileID: 2100000, guid: a5ebd6653630a894089f35d0b892f6a4, type: 2}
-  currentUsingTexture: 1
+  materials:
+  - {fileID: 2100000, guid: 7632240db73b56c4195c06b159d0fcf8, type: 2}
+  currentUsingTexture: 2
+  currentSkinnedQuality: 0
+  isEnableInterpolation: 0
+  exposedBones: []
+  currentTextureIndex: 2

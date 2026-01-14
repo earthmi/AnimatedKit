@@ -31,12 +31,12 @@ MonoBehaviour:
     animatedEvents:
     - eventName: AttackClipStart
       triggerTime: 0.41130605
-      hasTriggered: 0
-      lastTriggerTime: -1
+      hasTriggered: 1
+      lastTriggerTime: 0.41214484
     - eventName: AttackClipEnd
       triggerTime: 0.6998051
-      hasTriggered: 0
-      lastTriggerTime: -1
+      hasTriggered: 1
+      lastTriggerTime: 0.70035005
   - Name: death
     StartFrame: 101
     EndFrame: 151
@@ -68,6 +68,18 @@ MonoBehaviour:
   - format: 1
     animatedTexture: {fileID: 2800000, guid: e0ccb8611da9cbe4998cbf5864c38dba, type: 2}
     pixelCountPerFrame: 105
+  - format: 2
+    animatedTexture: {fileID: 2800000, guid: cb50eb4cfb991a14e92df309ba0db6fa, type: 2}
+    pixelCountPerFrame: 210
   animatedMesh: {fileID: 4300000, guid: c364d3b56d0beaf4095cce3a9c48d523, type: 2}
-  shadingMaterial: {fileID: 2100000, guid: 1b378ed74e913254fb90f7be58c9fe37, type: 2}
+  materials:
+  - {fileID: 2100000, guid: 04bd47316f589aa45b70e595a605974c, type: 2}
+  - {fileID: 2100000, guid: 62218a9c079d1e64ebf568b84680d0f9, type: 2}
   currentUsingTexture: 1
+  currentSkinnedQuality: 2
+  isEnableInterpolation: 0
+  exposedBones:
+  - Index: 30
+    Position: {x: 0.6469417, y: 0.0024037787, z: 1.0828297}
+    Direction: {x: -0.120496005, y: -0.6345666, z: 0.16507724}
+  currentTextureIndex: 1

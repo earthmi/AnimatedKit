@@ -27,7 +27,7 @@ MonoBehaviour:
     FrameCount: 34
     Seconds: 1.1333334
     isEditorPreviewing: 0
-    IsLoop: 1
+    IsLoop: 0
     animatedEvents: []
   - Name: run
     StartFrame: 85
@@ -55,24 +55,27 @@ MonoBehaviour:
     animatedEvents:
     - eventName: AttackClipStart
       triggerTime: 0.37704918
-      hasTriggered: 1
-      lastTriggerTime: 0.3772276
+      hasTriggered: 0
+      lastTriggerTime: -1
     - eventName: AttackClipEnd
       triggerTime: 0.45286885
-      hasTriggered: 1
-      lastTriggerTime: 0.45295197
+      hasTriggered: 0
+      lastTriggerTime: -1
   textures:
   - format: 0
-    animatedTexture: {fileID: 2800000, guid: d51bdc040e440a241afb1d86f09c2b2c, type: 2}
+    animatedTexture: {fileID: 2800000, guid: b45e557040a6e394d93702eb1413fd93, type: 2}
     pixelCountPerFrame: 348
   - format: 1
-    animatedTexture: {fileID: 2800000, guid: e25369f2e48e2a1408c2361ee669d0fd, type: 2}
+    animatedTexture: {fileID: 2800000, guid: 55aae7deb1f8b5f419fec297821ad1cc, type: 2}
     pixelCountPerFrame: 87
-  animatedMesh: {fileID: 4300000, guid: 5262fd3e19784294fb33e0d1f4624b36, type: 2}
+  - format: 2
+    animatedTexture: {fileID: 2800000, guid: 47e8e509203e8354f924d4738e1b2faa, type: 2}
+    pixelCountPerFrame: 174
+  animatedMesh: {fileID: 4300000, guid: 137e4a63d9588344692bebb14be8463e, type: 2}
   materials:
-  - {fileID: 2100000, guid: 7ed2dbab2b4203844be83f3c55267e65, type: 2}
-  currentUsingTexture: 0
+  - {fileID: 2100000, guid: f62e092f70118ba45826301a7b4b5479, type: 2}
+  currentUsingTexture: 2
   currentSkinnedQuality: 2
   isEnableInterpolation: 1
   exposedBones: []
-  currentTextureIndex: -1
+  currentTextureIndex: 2

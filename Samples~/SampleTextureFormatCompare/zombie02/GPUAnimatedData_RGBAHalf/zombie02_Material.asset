@@ -8,9 +8,10 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: zombie02_Material
-  m_Shader: {fileID: 4800000, guid: f099b7a01dc35624d855894cf16e4818, type: 3}
+  m_Shader: {fileID: 4800000, guid: f1546d7a4c435d44cbe6b12878f9a653, type: 3}
   m_ValidKeywords:
   - _FORMAT_RGBAHALF
+  - _INTERPOLATION
   - _NORMALMAP
   - _SKIN_BONE1
   m_InvalidKeywords: []
@@ -88,9 +89,10 @@ Material:
     - _GlossMapScale: 1
     - _Glossiness: 0.368
     - _GlossyReflections: 1
+    - _Interpolation: 1
     - _IsEnableNormalMap: 1
     - _KeepingTime: 0
-    - _Metallic: 0.302
+    - _Metallic: 0.247
     - _Mode: 0
     - _OcclusionStrength: 1
     - _OffsetSeconds: 0
@@ -100,8 +102,10 @@ Material:
     - _RimLightThreshold: 0
     - _RimPower: 8
     - _Skin: 0
+    - _Smoothness: 0.435
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
+    - _SpecularPower: 0.477
     - _SrcBlend: 1
     - _StartFrame: 0
     - _UVSec: 0
@@ -112,6 +116,7 @@ Material:
     - _EdgeFirstColor: {r: 1, g: 1, b: 1, a: 1}
     - _EdgeSecondColor: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _RimLightColor: {r: 0, g: 0, b: 0, a: 0}
+    - _RangeParams: {r: 10, g: 1, b: 5, a: 65535}
+    - _RimLightColor: {r: 1, g: 0, b: 0, a: 0}
     - _Tint: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []

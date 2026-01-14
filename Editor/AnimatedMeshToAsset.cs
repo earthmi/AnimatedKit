@@ -290,11 +290,11 @@ namespace AnimatedKit
                         {
                             float v = boneMatrix[row, col];
                             Color c = EncodeFloatToRGBA32(v, minValue, maxValue);
-                            if (pixelIndex>= pixels.Length)
-                            {
-                                Debug.Log($"数组已经越界了，颜色缓冲：{pixels.Length},索引：{pixelIndex}");
-                                return;
-                            }
+                            // if (pixelIndex>= pixels.Length)
+                            // {
+                            //     Debug.Log($"数组已经越界了，颜色缓冲：{pixels.Length},索引：{pixelIndex}");
+                            //     return;
+                            // }
                             pixels[pixelIndex] = c;
                             pixelIndex++;
                         }
@@ -311,21 +311,6 @@ namespace AnimatedKit
                         pixels[pixelIndex] = c;
                         pixelIndex++;
                     }
-                    // for (int row = 0; row < 3; row++)
-                    // {
-                    //     for (int col = 0; col < 4; col++)
-                    //     {
-                    //         float v = boneMatrix[row, col];
-                    //         Color c = EncodeFloatToRGBA32(v, minValue, maxValue);
-                    //         if (pixelIndex>= pixels.Length)
-                    //         {
-                    //             Debug.Log($"数组已经越界了，颜色缓冲：{pixels.Length},索引：{pixelIndex}");
-                    //             return;
-                    //         }
-                    //         pixels[pixelIndex] = c;
-                    //         pixelIndex++;
-                    //     }
-                    // }
                 }
             }
 
