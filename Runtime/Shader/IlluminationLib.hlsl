@@ -91,7 +91,7 @@ struct SurfaceDotData
     half NdotH;
     half LdotH;
 };
-SurfaceDotData GetNormalLightData(half3 normalDir,half3 viewDir,half3 lightDir)
+SurfaceDotData GetNormalLightData(float3 normalDir,float3 viewDir,float3 lightDir)
 {
 	SurfaceDotData data = (SurfaceDotData)0;
 	float3 halfVector = normalize(lightDir + viewDir);
@@ -175,12 +175,13 @@ fixed4 fragSimpleLit(vertexOut i) : SV_Target
 	half ndotl = saturate(dot(normal, worldLightDir));
 	half3 diffuse = _LightColor0.rgb * Albedo.rgb * ndotl;
 	// 计算高光 (Blinn-Phong模型)
-	half3 viewDir = normalize(_WorldSpaceCameraPos - i.worldPos);
-	half3 halfDir = normalize(worldLightDir + viewDir);
+	float3 viewDir = normalize(_WorldSpaceCameraPos - i.worldPos);
+	float3 halfDir = normalize(worldLightDir + viewDir);
 	half ndoth = saturate(dot(normal, halfDir));
-	half specularPower = exp2(10 * _Smoothness + 1); // 转换为类似Unity的光泽度
+	half specularPower =min(exp2(10 * _Smoothness + 1),1000.0); // 转换为类似Unity的光泽度,half精度会溢出，限制一下最大值
+	
 	half specularTerm = pow(ndoth, specularPower);
-	half3 specular = _LightColor0.rgb *  specularTerm * _SpecularPower ;
+	half3 specular = _LightColor0.rgb *  specularTerm * _SpecularPower;
 	// 添加环境光和顶点颜色
 	half3 ambient = UNITY_LIGHTMODEL_AMBIENT.rgb * Albedo.rgb * _AmbientIntensity;
 	//统一管理光照衰减和阴影
@@ -205,15 +206,15 @@ fixed4 fragPBR(vertexOut i) : SV_Target
 {
     float3 Albedo = _Tint* tex2D(_MainTex,i.uv);
     #ifdef _NORMALMAP
-		half3 normal=GetWorldNormal(tex2D(_NormalMap,i.uv),_BumpScale,i.tangentToWorldMatrix);
+		float3 normal=GetWorldNormal(tex2D(_NormalMap,i.uv),_BumpScale,i.tangentToWorldMatrix);
 	#else
-	    half3 normal =normalize(i.worldNormal);
+	    float3 normal =normalize(i.worldNormal);
 	#endif
     
     #ifdef USING_DIRECTIONAL_LIGHT
     fixed3 worldLightDir = normalize(_WorldSpaceLightPos0.xyz);
     #else
-    half3 worldLightDir = normalize(_WorldSpaceLightPos0.xyz - i.worldPos.xyz);
+    float3 worldLightDir = normalize(_WorldSpaceLightPos0.xyz - i.worldPos.xyz);
     #endif
     
     float3 viewDir=normalize(UnityWorldSpaceViewDir(i.worldPos));
