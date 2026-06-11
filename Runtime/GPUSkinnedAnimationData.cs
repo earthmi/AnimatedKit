@@ -166,7 +166,10 @@ namespace AnimatedKit
 
         public void SetupTexture(GPUAnimaTextureColorMode targetFormat)
         {
-            
+            if (textures==null)
+            {
+                return;
+            }
             var texIndex = textures.FindIndex((info => info.format == targetFormat));
             if (texIndex <0)
             {

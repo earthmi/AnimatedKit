@@ -132,6 +132,11 @@ namespace AnimatedKit
             List<AnimationTextureInfo> textureInfos = new();
             foreach (GPUAnimaTextureColorMode colorMode in textureFormats)
             {
+                if (colorMode == GPUAnimaTextureColorMode._RGBM)
+                {
+                    //该模式已经过时，改用双16位浮点数的编码形式
+                    continue;
+                }
                 var animationTexture = GenerateAnimationTexture(animator.gameObject, clips, skinnedMeshRenderer,colorMode);
                 var animTexPath = $"{filePathPre}_AnimationTexture{colorMode}.asset";//   string.Format($"{{0}}/{FolderName}/{{1}}_AnimationTexture.asset", selectionPath,targetObject.name);
                 WriteUnityFile(animTexPath, animationTexture);
