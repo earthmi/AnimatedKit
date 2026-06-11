@@ -9,10 +9,15 @@ namespace AnimatedKit
         public static void PlayWithCallBack(this Animator animator, string stateName,int layerIndex, Action callBack,MonoBehaviour target)
         {
             // var isPlayingCurrentState = animator.GetCurrentAnimatorStateInfo(layerIndex).IsName(stateName);
-            target.StopAllCoroutines();
             animator.Play(stateName, layerIndex, 0);
+            if (callBack==null)
+            {
+                return;
+            }
+            target.StopAllCoroutines();
             IEnumerator PlayingAnimation()
             {
+                yield return null;
                 while (!animator.GetCurrentAnimatorStateInfo(layerIndex).IsName(stateName))
                 {
                     yield return null;

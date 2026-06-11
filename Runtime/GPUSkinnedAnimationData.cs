@@ -46,8 +46,9 @@ namespace AnimatedKit
         public Material[] materials;
         // public Material shadingMaterial;
 
-
+        
         public GPUAnimaTextureColorMode currentUsingTexture;
+        public bool isAutoSelectAnimaTexture=true;
         public SkinnedQuality currentSkinnedQuality;
         public bool isEnableInterpolation;
         public List<ExposedBone> exposedBones;
@@ -55,13 +56,31 @@ namespace AnimatedKit
         private GPUAnimaTextureColorMode _currentUsingTexture;
         private SkinnedQuality _currentSkinnedQuality;
         private bool _isEnableInterpolation;
+        private bool _isAutoSelectAnimaTexture;
         private void OnEnable()
         {
-            Debug.Log($"启用GPUSkinnedAnimationData：{name}");
-            _currentUsingTexture = currentUsingTexture;
+            if (isAutoSelectAnimaTexture)
+            {
+                AutoSelectTexture();
+            }
+            else
+            {
+                _currentUsingTexture = currentUsingTexture;
+            }
             _currentSkinnedQuality = currentSkinnedQuality;
             _isEnableInterpolation = isEnableInterpolation;
+            _isAutoSelectAnimaTexture = isAutoSelectAnimaTexture;
         }
+
+        public void AutoSelectTexture()
+        {
+            var isSupportRGBAHalf = SystemInfo.SupportsTextureFormat(TextureFormat.RGBAHalf);
+            GPUAnimaTextureColorMode format = isSupportRGBAHalf
+                ? GPUAnimaTextureColorMode._RGBAHALF
+                : GPUAnimaTextureColorMode._DUAL16FP;
+            Debug.Log($"GPU 动画纹理 ”{name}“ 自动选择 ： {format}");
+            SetupTexture(format);
+        } 
 
         public void OnValidate()
         {
@@ -78,6 +97,15 @@ namespace AnimatedKit
             if (_isEnableInterpolation!= isEnableInterpolation)
             {
                 SetupInterpolation();
+            }
+
+            if (_isAutoSelectAnimaTexture != isAutoSelectAnimaTexture)
+            {
+                _isAutoSelectAnimaTexture = isAutoSelectAnimaTexture;
+                if (isAutoSelectAnimaTexture)
+                {
+                    AutoSelectTexture();
+                }
             }
             
         }
@@ -142,6 +170,7 @@ namespace AnimatedKit
             var texIndex = textures.FindIndex((info => info.format == targetFormat));
             if (texIndex <0)
             {
+                Debug.LogError($"切换失败，GPU动画 ”{name}“ 无法找到对应的动画纹理格式：{targetFormat}");
                 return;
             }
             var texInfo = textures[texIndex];
@@ -168,7 +197,9 @@ namespace AnimatedKit
                     }
                 }
             }
-            _currentUsingTexture = currentUsingTexture;
+
+            _currentUsingTexture = texInfo.format;// currentUsingTexture;
+            currentUsingTexture = _currentUsingTexture;
             currentTextureIndex = texIndex;
             Debug.Log($"成功切换到贴图格式：{currentUsingTexture}");
         }

@@ -7,7 +7,7 @@ Shader "MiniGame/Standard-Lit(Low)"
     	
     	[Header(Normal)]
     	[Toggle(_NORMALMAP)] _IsEnableNormalMap ("Is Enable Normal Map", Int) = 0
-         _BumpScale("Bump Scale", Range(-1, 1)) = 1.0
+         _BumpScale("Bump Scale", Range(-5, 5)) = 1.0
         [NoScaleOffset] _NormalMap("Normal Map", 2D) = "bump" {}
         _AmbientIntensity("Ambient Intensity", Range(1, 3)) = 1.0
     	[Header(RimLight)]

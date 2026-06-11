@@ -6,7 +6,7 @@ Shader "MiniGame/Standard-Lit(Simple)"
     	_Tint("Tint",Color)=(1,1,1,1)
     	[Header(Normal)]
     	[Toggle(_NORMALMAP)] _IsEnableNormalMap ("Is Enable Normal Map", Int) = 0
-         _BumpScale("Bump Scale", Range(-1, 1)) = 1.0
+         _BumpScale("Bump Scale", Range(-5, 5)) = 1.0
         [NoScaleOffset] _NormalMap("Normal Map", 2D) = "bump" {}
     	
     	[Header(Specular)]
