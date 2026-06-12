@@ -1,6 +1,6 @@
 {
   "name": "wayne.animatedkit",
-  "version": "0.1.7",
+  "version": "0.1.9",
   "displayName": "Animated Kit(OnlyCode)",
   "description": "GPU skinned skeleton animation support in build in pipeline, and rim light,dissolve shader feature support",
   "author": {
