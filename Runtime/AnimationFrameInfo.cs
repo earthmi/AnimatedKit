@@ -27,6 +27,7 @@ namespace AnimatedKit
         public float Seconds;
         public bool isEditorPreviewing;
         public bool IsLoop;
+        public float Speed=1;
         public List<GPUAnimatedEvent> animatedEvents;
         public Action<AnimationFrameInfo> OnEditorPreviewClick;
         public AnimationFrameInfo(string name, int startFrame, int endFrame, int frameCount,float seconds,bool isLooping,AnimationEvent[] events)

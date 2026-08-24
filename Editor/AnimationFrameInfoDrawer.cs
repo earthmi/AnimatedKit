@@ -35,6 +35,7 @@ public class AnimationFrameInfoDrawer : PropertyDrawer
             SerializedProperty secondsProp = property.FindPropertyRelative("Seconds");
             SerializedProperty animatedEventsProp = property.FindPropertyRelative("animatedEvents");
             SerializedProperty isLoopProp = property.FindPropertyRelative("IsLoop");
+            SerializedProperty speedProp = property.FindPropertyRelative("Speed");
 
             // 生成唯一的列表标识符
             string listKey = $"{property.propertyPath}.animatedEvents";
@@ -49,6 +50,8 @@ public class AnimationFrameInfoDrawer : PropertyDrawer
             Rect isLoopRect = new Rect(position.x, currentY, position.width, lineHeight);
             currentY += lineHeight + verticalSpacing;
             Rect secondsRect = new Rect(position.x, currentY, position.width, lineHeight);
+            currentY += lineHeight + verticalSpacing;
+            Rect speedRect = new Rect(position.x, currentY, position.width, lineHeight);
             currentY += lineHeight + verticalSpacing;
             Rect startFrameRect = new Rect(position.x, currentY, position.width, lineHeight);
             currentY += lineHeight + verticalSpacing;
@@ -67,6 +70,7 @@ public class AnimationFrameInfoDrawer : PropertyDrawer
             EditorGUI.PropertyField(nameRect, nameProp);
             EditorGUI.PropertyField(isLoopRect, isLoopProp);
             EditorGUI.PropertyField(secondsRect, secondsProp);
+            EditorGUI.PropertyField(speedRect, speedProp);
 
             GUI.enabled = false; // 禁用 GUI 编辑
 
@@ -150,7 +154,7 @@ public class AnimationFrameInfoDrawer : PropertyDrawer
         if (property.isExpanded)
         {
             // 5个基本属性字段
-            height += (lineHeight + verticalSpacing) * 6;
+            height += (lineHeight + verticalSpacing) * 7;
             
             // 事件列表标题
             height += lineHeight + verticalSpacing;

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEditor;
+using UnityEditor.Animations;
 using UnityEngine;
 using UnityEngine.Rendering;
 using Object = UnityEngine.Object;
@@ -40,6 +41,21 @@ namespace AnimatedKit
         private const int TargetFrameRate = 30;
         private static readonly string FolderName = "GPUAnimatedData";
         static Dictionary<Transform, PoseData> originalPose;
+
+        private sealed class StateAnimationInfo
+        {
+            public string Name;
+            public float Speed;
+            public AnimationClip Clip;
+        }
+
+        private sealed class BakedClipInfo
+        {
+            public AnimationClip Clip;
+            public int StartFrame;
+            public int EndFrame;
+            public int FrameCount;
+        }
 
         [MenuItem("GPU Animated Kit/Humanoid TPose")]
         static void TPose()
@@ -116,8 +132,14 @@ namespace AnimatedKit
             var selectionPath = Path.GetDirectoryName(AssetDatabase.GetAssetPath(targetObject));
             var skinnedMeshRenderer = skinnedMeshRenderers.First();
 
-            var clips = animator.runtimeAnimatorController.animationClips;
+            var stateAnimations = GetAnimatorStateAnimations(animator);
+            if (stateAnimations.Count == 0)
+            {
+                EditorUtility.DisplayDialog("Warning", "Animator Controller does not contain direct animation clip states.", "OK");
+                return;
+            }
 
+            var bakedClips = GetBakedClipInfos(stateAnimations);
             var path = Path.Combine(selectionPath, FolderName);
             if (!Directory.Exists(path))
             {
@@ -137,7 +159,7 @@ namespace AnimatedKit
                     //该模式已经过时，改用双16位浮点数的编码形式
                     continue;
                 }
-                var animationTexture = GenerateAnimationTexture(animator.gameObject, clips, skinnedMeshRenderer,colorMode);
+                var animationTexture = GenerateAnimationTexture(animator.gameObject, bakedClips, skinnedMeshRenderer,colorMode);
                 var animTexPath = $"{filePathPre}_AnimationTexture{colorMode}.asset";//   string.Format($"{{0}}/{FolderName}/{{1}}_AnimationTexture.asset", selectionPath,targetObject.name);
                 WriteUnityFile(animTexPath, animationTexture);
                 textureInfos.Add(new()
@@ -166,7 +188,7 @@ namespace AnimatedKit
             // AssetDatabase.CreateAsset(material, string.Format($"{{0}}/{FolderName}/{{1}}_Material.asset", selectionPath, targetObject.name));
 
             var exposedBones = GetExposedBones(skinnedMeshRenderer);
-            var dataCollection = GenerateSO(GetAnimaFrameInfos(clips),textureInfos,mesh,materials,exposedBones);
+            var dataCollection = GenerateSO(GetAnimaFrameInfos(stateAnimations, bakedClips),textureInfos,mesh,materials,exposedBones);
             var dataCollectionPath = $"{filePathPre}_GPUAnimatedSO.asset";
             WriteUnityFile(dataCollectionPath, dataCollection);
             // AssetDatabase.CreateAsset(dataCollection, string.Format($"{{0}}/{FolderName}/{{1}}_GPUAnimatedSO.asset", selectionPath, targetObject.name));
@@ -200,6 +222,70 @@ namespace AnimatedKit
             }
 
             return bones;
+        }
+
+        private static List<StateAnimationInfo> GetAnimatorStateAnimations(Animator animator)
+        {
+            var stateAnimations = new List<StateAnimationInfo>();
+            if (!(animator.runtimeAnimatorController is AnimatorController controller))
+            {
+                Debug.LogError("GPU animation baking requires an AnimatorController.");
+                return stateAnimations;
+            }
+
+            foreach (var layer in controller.layers)
+            {
+                foreach (var childState in layer.stateMachine.states)
+                {
+                    var state = childState.state;
+                    if (!(state.motion is AnimationClip clip))
+                    {
+                        // Blend trees, empty states and nested state machines are not baked.
+                        continue;
+                    }
+
+                    stateAnimations.Add(new StateAnimationInfo
+                    {
+                        Name = state.name,
+                        Speed = state.speed,
+                        Clip = clip,
+                    });
+                }
+            }
+
+            return stateAnimations;
+        }
+
+        private static List<BakedClipInfo> GetBakedClipInfos(List<StateAnimationInfo> stateAnimations)
+        {
+            var bakedClips = new List<BakedClipInfo>();
+            var clipLookup = new Dictionary<AnimationClip, BakedClipInfo>();
+            var currentClipFrames = 0;
+
+            foreach (var stateAnimation in stateAnimations)
+            {
+                if (clipLookup.ContainsKey(stateAnimation.Clip))
+                {
+                    continue;
+                }
+
+                var frameCount = (int)(stateAnimation.Clip.length * TargetFrameRate);
+                var startFrame = currentClipFrames + 1;
+                var endFrame = startFrame + frameCount - 1;
+                var bakedClip = new BakedClipInfo
+                {
+                    Clip = stateAnimation.Clip,
+                    StartFrame = startFrame,
+                    EndFrame = endFrame,
+                    FrameCount = frameCount,
+                };
+
+                bakedClips.Add(bakedClip);
+                clipLookup.Add(stateAnimation.Clip, bakedClip);
+                currentClipFrames = endFrame;
+            }
+
+            return bakedClips;
         }
         
 
@@ -357,9 +443,9 @@ namespace AnimatedKit
             return new Color32(r, g, b, a);
         }
 
-        private static Texture GenerateAnimationTexture(GameObject targetObject, IEnumerable<AnimationClip> clips, SkinnedMeshRenderer smr,GPUAnimaTextureColorMode colorMode)
+        private static Texture GenerateAnimationTexture(GameObject targetObject, IEnumerable<BakedClipInfo> bakedClips, SkinnedMeshRenderer smr,GPUAnimaTextureColorMode colorMode)
         {
-            var textureBoundary = GetCalculatedTextureBoundary(clips, smr.bones.Count(),colorMode);
+            var textureBoundary = GetCalculatedTextureBoundary(bakedClips, smr.bones.Count(),colorMode);
             
             var texture = new Texture2D((int)textureBoundary.x, (int)textureBoundary.y, GetTextureFormat(colorMode), false, true);
             
@@ -375,9 +461,10 @@ namespace AnimatedKit
             // 1. 统计所有矩阵元素的最大最小值
             minValue = float.MaxValue;
             maxValue = float.MinValue;
-            foreach (var clip in clips)
+            foreach (var bakedClip in bakedClips)
             {
-                var totalFrames = (int)(clip.length * TargetFrameRate);
+                var clip = bakedClip.Clip;
+                var totalFrames = bakedClip.FrameCount;
                 foreach (var frame in Enumerable.Range(0, totalFrames))
                 {
                     clip.SampleAnimation(targetObject, (float)frame / TargetFrameRate);
@@ -401,9 +488,10 @@ namespace AnimatedKit
             //采样第一帧为 TPose
             WriteBoneMatrix2Color(smr, pixels,colorMode);
 
-            foreach (var clip in clips)
+            foreach (var bakedClip in bakedClips)
             {
-                var totalFrames = (int)(clip.length * TargetFrameRate);
+                var clip = bakedClip.Clip;
+                var totalFrames = bakedClip.FrameCount;
                 foreach (var frame in Enumerable.Range(0, totalFrames))
                 {
                     clip.SampleAnimation(targetObject, (float)frame / TargetFrameRate);
@@ -431,7 +519,7 @@ namespace AnimatedKit
             return texture;
         }
         static int perFrameBoneMatrixPixels = 0;
-        private static Vector2 GetCalculatedTextureBoundary(IEnumerable<AnimationClip> clips, int boneLength,GPUAnimaTextureColorMode textureFormat)
+        private static Vector2 GetCalculatedTextureBoundary(IEnumerable<BakedClipInfo> bakedClips, int boneLength,GPUAnimaTextureColorMode textureFormat)
         {
             perFrameBoneMatrixPixels = 0;
             switch (textureFormat)
@@ -450,7 +538,7 @@ namespace AnimatedKit
                     perFrameBoneMatrixPixels = BoneMatrixRowCount * boneLength;
                     break;
             }
-            var totalPixels = clips.Aggregate(perFrameBoneMatrixPixels, (pixels, currentClip) => pixels + perFrameBoneMatrixPixels * (int)(currentClip.length * TargetFrameRate));
+            var totalPixels = bakedClips.Aggregate(perFrameBoneMatrixPixels, (pixels, currentClip) => pixels + perFrameBoneMatrixPixels * currentClip.FrameCount);
             Debug.Log($"计算动画矩阵纹理，存储模式：{textureFormat}，所有像素：{totalPixels}");
             // var (textureWidth,textureHeight) = TextureSizeCalculator.CalculateOptimalTextureSize(totalPixels,requirePowerOfTwo:false);
             var textureWidth = 1;
@@ -486,19 +574,25 @@ namespace AnimatedKit
             return mats;
         }
 
-        static List<AnimationFrameInfo> GetAnimaFrameInfos(IEnumerable<AnimationClip> clips)
+        static List<AnimationFrameInfo> GetAnimaFrameInfos(List<StateAnimationInfo> stateAnimations, List<BakedClipInfo> bakedClips)
         {
             var frameInformations = new List<AnimationFrameInfo>();
-            var currentClipFrames = 0;
-            
-            foreach (var clip in clips)
-            {
-                var frameCount = (int)(clip.length * TargetFrameRate);
-                var startFrame = currentClipFrames + 1;
-                var endFrame = startFrame + frameCount - 1;
-                frameInformations.Add(new AnimationFrameInfo(clip.name, startFrame, endFrame, frameCount,clip.length,clip.isLooping,clip.events));
+            var clipLookup = bakedClips.ToDictionary(x => x.Clip);
 
-                currentClipFrames = endFrame;
+            foreach (var stateAnimation in stateAnimations)
+            {
+                var clip = stateAnimation.Clip;
+                var bakedClip = clipLookup[clip];
+                var frameInfo = new AnimationFrameInfo(
+                    stateAnimation.Name,
+                    bakedClip.StartFrame,
+                    bakedClip.EndFrame,
+                    bakedClip.FrameCount,
+                    clip.length,
+                    clip.isLooping,
+                    clip.events);
+                frameInfo.Speed = stateAnimation.Speed;
+                frameInformations.Add(frameInfo);
             }
 
             return frameInformations;

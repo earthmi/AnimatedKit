@@ -172,7 +172,11 @@ namespace AnimatedKit
         
         public void SetAllActionPlay()
         {
-            var totalFrames = SkinnedAnimaInfo.clipsInfo[^1].EndFrame;
+            var totalFrames = 0;
+            foreach (var clip in SkinnedAnimaInfo.clipsInfo)
+            {
+                totalFrames = Mathf.Max(totalFrames, clip.EndFrame);
+            }
             Debug.Log($"开始播放，从0到：{totalFrames}");
             PropertyBlockController.SetFloat("_StartFrame", 0);
             PropertyBlockController.SetFloat("_EndFrame", totalFrames);
@@ -353,7 +357,7 @@ namespace AnimatedKit
             }
             else
             {
-                time += Time.deltaTime * Speed;
+                time += Time.deltaTime * Speed * clip.Speed;
             }
             PropertyBlockController.SetFloat("_KeepingTime",time);
             NormalizeTime = Mathf.InverseLerp(0, clip.Seconds, time);
