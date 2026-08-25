@@ -36,7 +36,7 @@ namespace AnimatedKit
             StartFrame = startFrame;
             EndFrame = endFrame;
             FrameCount = frameCount;
-            Seconds = seconds * speed;
+            Seconds = seconds;
             IsLoop = isLooping;
             Speed = speed;
             if (events is {Length:>0})

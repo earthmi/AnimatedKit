@@ -233,9 +233,9 @@ namespace AnimatedKit
         private static List<StateAnimationInfo> GetAnimatorStateAnimations(Animator animator)
         {
             var stateAnimations = new List<StateAnimationInfo>();
-            if (!(animator.runtimeAnimatorController is AnimatorController controller))
+            var controller = GetBaseAnimatorController(animator.runtimeAnimatorController, out var clipOverrides);
+            if (controller == null)
             {
-                Debug.LogError("GPU animation baking requires an AnimatorController.");
                 return stateAnimations;
             }
 
@@ -250,6 +250,11 @@ namespace AnimatedKit
                         continue;
                     }
 
+                    if (clipOverrides.TryGetValue(clip, out var overrideClip) && overrideClip != null)
+                    {
+                        clip = overrideClip;
+                    }
+
                     stateAnimations.Add(new StateAnimationInfo
                     {
                         Name = state.name,
@@ -260,6 +265,40 @@ namespace AnimatedKit
             }
 
             return stateAnimations;
+        }
+
+        private static AnimatorController GetBaseAnimatorController(
+            RuntimeAnimatorController runtimeController,
+            out Dictionary<AnimationClip, AnimationClip> clipOverrides)
+        {
+            clipOverrides = new Dictionary<AnimationClip, AnimationClip>();
+            var overrideController = runtimeController as AnimatorOverrideController;
+            var controller = overrideController != null
+                ? overrideController.runtimeAnimatorController as AnimatorController
+                : runtimeController as AnimatorController;
+
+            if (controller == null)
+            {
+                Debug.LogError("GPU animation baking requires an AnimatorController or AnimatorOverrideController backed by an AnimatorController.");
+                return null;
+            }
+
+            if (overrideController == null)
+            {
+                return controller;
+            }
+
+            var overrides = new List<KeyValuePair<AnimationClip, AnimationClip>>();
+            overrideController.GetOverrides(overrides);
+            foreach (var clipOverride in overrides)
+            {
+                if (clipOverride.Key != null && clipOverride.Value != null)
+                {
+                    clipOverrides[clipOverride.Key] = clipOverride.Value;
+                }
+            }
+
+            return controller;
         }
 
         private static List<BakedClipInfo> GetBakedClipInfos(List<StateAnimationInfo> stateAnimations)
