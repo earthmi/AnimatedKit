@@ -300,11 +300,10 @@ namespace AnimatedKit
         
         static void WritePrefab(string path, GameObject target)
         {
-            if (File.Exists(path))
+            if (!PrefabUtility.SaveAsPrefabAsset(target, path, out var success) || !success)
             {
-                File.Delete(path);
+                Debug.LogError($"无法保存 GPU 动画 Prefab：{path}");
             }
-            PrefabUtility.CreatePrefab(path,target);
         }
 
 
