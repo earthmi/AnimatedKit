@@ -90,6 +90,11 @@ namespace AnimatedKit
             {
                 originalPose[bone] = new PoseData(bone);
             }
+            var parent =  skinnedMeshRenderer.rootBone.parent;
+            if (parent)
+            {
+                originalPose[parent] = new PoseData(parent);
+            }
         }
 
         static void ResetOriginPose()
@@ -161,7 +166,7 @@ namespace AnimatedKit
                 }
                 var animationTexture = GenerateAnimationTexture(animator.gameObject, bakedClips, skinnedMeshRenderer,colorMode);
                 var animTexPath = $"{filePathPre}_AnimationTexture{colorMode}.asset";//   string.Format($"{{0}}/{FolderName}/{{1}}_AnimationTexture.asset", selectionPath,targetObject.name);
-                WriteUnityFile(animTexPath, animationTexture);
+                animationTexture = WriteUnityFile(animTexPath, animationTexture);
                 textureInfos.Add(new()
                 {
                     animatedTexture = animationTexture,
@@ -175,22 +180,22 @@ namespace AnimatedKit
 
             var mesh = GenerateUvBoneWeightedMesh(skinnedMeshRenderer);
             var meshPath = $"{filePathPre}_mesh.asset";
-            WriteUnityFile(meshPath, mesh);
+            mesh = WriteUnityFile(meshPath, mesh);
             // AssetDatabase.CreateAsset(mesh, $"{meshPath}_Mesh.asset");
 
             var materials = GenerateMaterials(skinnedMeshRenderer);
-            foreach (var VARIABLE in materials)
+            for (var i = 0; i < materials.Length; i++)
             {
-                var matName = VARIABLE.name.Replace("(Clone)", "");
+                var matName = materials[i].name.Replace("(Clone)", "");
                 var materialPath = $"{filePathPre}_{matName}_mat.asset";
-                WriteUnityFile(materialPath, VARIABLE);
+                materials[i] = WriteUnityFile(materialPath, materials[i]);
             }
             // AssetDatabase.CreateAsset(material, string.Format($"{{0}}/{FolderName}/{{1}}_Material.asset", selectionPath, targetObject.name));
 
             var exposedBones = GetExposedBones(skinnedMeshRenderer);
             var dataCollection = GenerateSO(GetAnimaFrameInfos(stateAnimations, bakedClips),textureInfos,mesh,materials,exposedBones);
             var dataCollectionPath = $"{filePathPre}_GPUAnimatedSO.asset";
-            WriteUnityFile(dataCollectionPath, dataCollection);
+            dataCollection = WriteUnityFile(dataCollectionPath, dataCollection);
             // AssetDatabase.CreateAsset(dataCollection, string.Format($"{{0}}/{FolderName}/{{1}}_GPUAnimatedSO.asset", selectionPath, targetObject.name));
 
             var go = GenerateMeshRendererObject(targetObject, dataCollection);
@@ -199,6 +204,7 @@ namespace AnimatedKit
             // PrefabUtility.CreatePrefab(string.Format($"{{0}}/{FolderName}/{{1}}.prefab", selectionPath, targetObject.name), go);
             
             Object.DestroyImmediate(go);
+            AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
         }
 
@@ -289,13 +295,19 @@ namespace AnimatedKit
         }
         
 
-        static void WriteUnityFile(string path, Object target)
+        static T WriteUnityFile<T>(string path, T target) where T : Object
         {
-            if (File.Exists(path))
+            var existingAsset = AssetDatabase.LoadAssetAtPath<T>(path);
+            if (existingAsset != null)
             {
-                File.Delete(path);
+                EditorUtility.CopySerialized(target, existingAsset);
+                EditorUtility.SetDirty(existingAsset);
+                Object.DestroyImmediate(target);
+                return existingAsset;
             }
+
             AssetDatabase.CreateAsset(target, path);
+            return target;
         }
         
         static void WritePrefab(string path, GameObject target)
@@ -589,8 +601,8 @@ namespace AnimatedKit
                     bakedClip.FrameCount,
                     clip.length,
                     clip.isLooping,
+                    stateAnimation.Speed,
                     clip.events);
-                frameInfo.Speed = stateAnimation.Speed;
                 frameInformations.Add(frameInfo);
             }
 

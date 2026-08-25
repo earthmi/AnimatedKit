@@ -30,14 +30,15 @@ namespace AnimatedKit
         public float Speed=1;
         public List<GPUAnimatedEvent> animatedEvents;
         public Action<AnimationFrameInfo> OnEditorPreviewClick;
-        public AnimationFrameInfo(string name, int startFrame, int endFrame, int frameCount,float seconds,bool isLooping,AnimationEvent[] events)
+        public AnimationFrameInfo(string name, int startFrame, int endFrame, int frameCount,float seconds,bool isLooping,float speed,AnimationEvent[] events)
         {
             Name = name;
             StartFrame = startFrame;
             EndFrame = endFrame;
             FrameCount = frameCount;
-            Seconds = seconds;
+            Seconds = seconds * speed;
             IsLoop = isLooping;
+            Speed = speed;
             if (events is {Length:>0})
             {
                 animatedEvents = new List<GPUAnimatedEvent>();
