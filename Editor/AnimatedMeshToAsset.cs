@@ -82,18 +82,23 @@ namespace AnimatedKit
         }
 
 
-        static void CaptureOriginPose(SkinnedMeshRenderer skinnedMeshRenderer)
+        static void CaptureOriginPose(GameObject root)
         {
             originalPose = new();
             //记录原始Pose / TPose
-            foreach (Transform bone in skinnedMeshRenderer.bones)
+            // foreach (Transform bone in skinnedMeshRenderer.bones)
+            // {
+            //     originalPose[bone] = new PoseData(bone);
+            // }
+            // var parent =  skinnedMeshRenderer.rootBone.parent;
+            // if (parent)
+            // {
+            //     originalPose[parent] = new PoseData(parent);
+            // }
+            var transforms = root.GetComponentsInChildren<Transform>(true);
+            foreach (var transform in transforms)
             {
-                originalPose[bone] = new PoseData(bone);
-            }
-            var parent =  skinnedMeshRenderer.rootBone.parent;
-            if (parent)
-            {
-                originalPose[parent] = new PoseData(parent);
+                originalPose[transform] = new PoseData(transform);
             }
         }
 
@@ -151,7 +156,7 @@ namespace AnimatedKit
                 Directory.CreateDirectory(path);
             }
 
-            CaptureOriginPose(skinnedMeshRenderer);
+            CaptureOriginPose(targetObject);
             
             var filePathPre = string.Format($"{{0}}/{FolderName}/{{1}}", selectionPath,
                 targetObject.name);
